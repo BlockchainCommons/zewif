@@ -1,17 +1,6 @@
 use anyhow::{Result, bail};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum Network {
-    /// Zcash Mainnet.
-    Main,
-    /// Zcash Testnet.
-    Test,
-    /// Private integration / regression testing, used in `zcashd`.
-    ///
-    /// For some address types there is no distinction between test and regtest encodings;
-    /// those will always be parsed as `Network::Test`.
-    Regtest,
-}
+pub use zcash_protocol::consensus::NetworkType as Network;
 
 pub fn network_for_identifier(identifier: &str) -> Result<Network> {
     if identifier == "main" {
