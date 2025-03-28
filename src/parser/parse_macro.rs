@@ -67,9 +67,10 @@ macro_rules! parse {
 #[macro_export]
 macro_rules! parse {
     (buf = $buf:expr, $type:ty, $context:expr) => {
-        ::anyhow::Context::with_context(<$type as $crate::parser::Parse>::parse_buf($buf, false), || {
-            format!("Parsing {}", $context)
-        })
+        ::anyhow::Context::with_context(
+            <$type as $crate::parser::Parse>::parse_buf($buf, false),
+            || format!("Parsing {}", $context),
+        )
     };
     (buf = $buf:expr, $type:ty, param = $param:expr, $context:expr) => {
         ::anyhow::Context::with_context(
@@ -78,9 +79,10 @@ macro_rules! parse {
         )
     };
     (buf = $buf:expr, $type:ty, $context:expr, $trace: expr) => {
-        ::anyhow::Context::with_context(<$type as $crate::parser::Parse>::parse_buf($buf, $trace), || {
-            format!("Parsing {}", $context)
-        })
+        ::anyhow::Context::with_context(
+            <$type as $crate::parser::Parse>::parse_buf($buf, $trace),
+            || format!("Parsing {}", $context),
+        )
     };
     (buf = $buf:expr, $type:ty, param = $param:expr, $context:expr, $trace:expr) => {
         ::anyhow::Context::with_context(
@@ -115,8 +117,9 @@ macro_rules! parse {
         })
     };
     ($parser:expr, param = $param:expr, $context:expr) => {
-        ::anyhow::Context::with_context($crate::parser::ParseWithParam::parse($parser, $param), || {
-            format!("Parsing {}", $context)
-        })
+        ::anyhow::Context::with_context(
+            $crate::parser::ParseWithParam::parse($parser, $param),
+            || format!("Parsing {}", $context),
+        )
     };
 }

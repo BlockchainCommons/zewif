@@ -1,8 +1,8 @@
 // Macros
-mod mod_use_macro;
 mod blob_macro;
 mod data_macro;
 mod impl_attachable_macro;
+mod mod_use_macro;
 mod string_macro;
 
 // Modules requiring qualified paths
@@ -57,7 +57,7 @@ mod_use!(u256_type);
 mod_use!(zewif_top);
 mod_use!(zewif_wallet);
 
-use std::fmt::{self, Display, Formatter, Debug};
+use std::fmt::{self, Debug, Display, Formatter};
 
 pub struct NoQuotesDebugOption<'a, T>(pub &'a Option<T>);
 
