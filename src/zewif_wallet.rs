@@ -35,8 +35,8 @@ impl std::fmt::Debug for ZewifWallet {
 }
 
 impl Identifiable for ZewifWallet {
-    fn id(&self) -> ARID {
-        self.id
+    fn id(&self) -> &ARID {
+        &self.id
     }
 }
 
@@ -53,8 +53,8 @@ impl ZewifWallet {
         }
     }
 
-    pub fn id(&self) -> ARID {
-        self.id
+    pub fn id(&self) -> &ARID {
+        &self.id
     }
 
     pub fn network(&self) -> Network {
@@ -74,6 +74,6 @@ impl ZewifWallet {
     }
 
     pub fn add_account(&mut self, account: Account) {
-        self.accounts.insert(account.id(), account);
+        self.accounts.insert(account.id().clone(), account);
     }
 }
