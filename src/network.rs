@@ -1,5 +1,6 @@
 use anyhow::{Context, Result, bail};
 use bc_envelope::prelude::*;
+use zcash_protocol::consensus::NetworkType;
 
 use crate::{test_cbor_roundtrip, test_envelope_roundtrip};
 
@@ -40,31 +41,33 @@ use crate::{test_cbor_roundtrip, test_envelope_roundtrip};
 /// }
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum Network {
-    /// Zcash Mainnet.
-    /// The production network where ZEC with actual value is transferred.
-    Main,
+pub struct Network(NetworkType);
 
-    /// Zcash Testnet.
-    /// A public testing network with worthless coins for development.
-    Test,
+#[allow(non_upper_case_globals)]
+impl Network {
+    pub const Main: Self = Network(NetworkType::Main);
+    pub const Test: Self = Network(NetworkType::Test);
+    pub const Regtest: Self = Network(NetworkType::Regtest);
+}
 
-    /// Private integration / regression testing, used in `zcashd`.
-    ///
-    /// For some address types there is no distinction between test and regtest encodings;
-    /// those will always be parsed as `Network::Test`.
-    ///
-    /// Regtest allows developers to create a private blockchain for testing,
-    /// with immediate block generation on demand.
-    Regtest,
+impl From<NetworkType> for Network {
+    fn from(value: NetworkType) -> Self {
+        Network(value)
+    }
+}
+
+impl From<Network> for NetworkType {
+    fn from(value: Network) -> Self {
+        value.0
+    }
 }
 
 impl From<Network> for String {
     fn from(value: Network) -> String {
-        match value {
-            Network::Main => "main".to_string(),
-            Network::Test => "test".to_string(),
-            Network::Regtest => "regtest".to_string(),
+        match value.0 {
+            NetworkType::Main => "main".to_string(),
+            NetworkType::Test => "test".to_string(),
+            NetworkType::Regtest => "regtest".to_string(),
         }
     }
 }
@@ -74,11 +77,11 @@ impl TryFrom<String> for Network {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         if value == "main" {
-            Ok(Network::Main)
+            Ok(Network(NetworkType::Main))
         } else if value == "test" {
-            Ok(Network::Test)
+            Ok(Network(NetworkType::Test))
         } else if value == "regtest" {
-            Ok(Network::Regtest)
+            Ok(Network(NetworkType::Regtest))
         } else {
             bail!("Invalid network identifier: {}", value)
         }
@@ -117,11 +120,11 @@ impl TryFrom<Envelope> for Network {
 #[cfg(test)]
 impl crate::RandomInstance for Network {
     fn random() -> Self {
-        match rand::random::<u8>() % 3 {
-            0 => Network::Main,
-            1 => Network::Test,
-            _ => Network::Regtest,
-        }
+        Network(match rand::random::<u8>() % 3 {
+            0 => NetworkType::Main,
+            1 => NetworkType::Test,
+            _ => NetworkType::Regtest,
+        })
     }
 }
 

@@ -29,13 +29,13 @@
 /// This expands to:
 /// ```ignore
 /// # mod example {
-/// mod transaction_components; 
+/// mod transaction_components;
 /// pub use transaction_components::*;
-/// 
-/// mod key_types; 
+///
+/// mod key_types;
 /// pub use key_types::*;
-/// 
-/// mod address_formats; 
+///
+/// mod address_formats;
 /// pub use address_formats::*;
 /// # }
 /// ```

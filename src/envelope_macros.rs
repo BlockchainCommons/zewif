@@ -1,4 +1,3 @@
-
 #[macro_export]
 macro_rules! blob_envelope {
     ($name:ident) => {
@@ -6,8 +5,7 @@ macro_rules! blob_envelope {
             fn from(value: $name) -> Self {
                 let bytes: &[u8] = value.as_ref();
                 let cbor = bc_envelope::prelude::CBOR::to_byte_string(bytes);
-                bc_envelope::Envelope::new(cbor)
-                    .add_type(stringify!($name))
+                bc_envelope::Envelope::new(cbor).add_type(stringify!($name))
             }
         }
 

@@ -1,4 +1,6 @@
-use anyhow::{Result, bail};
+use std::fmt::Display;
+
+use anyhow::Result;
 use bc_envelope::prelude::*;
 
 use crate::{parse, parser::prelude::*, test_cbor_roundtrip};
@@ -28,64 +30,21 @@ use crate::{parse, parser::prelude::*, test_cbor_roundtrip};
 /// - Correctly applying activation rules to wallet data
 /// - Understanding which privacy and consensus features were available when transactions occurred
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum BranchId {
-    /// The consensus rules at the launch of Zcash.
-    Sprout,
-    /// The consensus rules for the Overwinter network upgrade.
-    Overwinter,
-    /// The consensus rules for the Sapling network upgrade, which introduced
-    /// the Sapling shielded pool.
-    Sapling,
-    /// The consensus rules for the Blossom network upgrade.
-    Blossom,
-    /// The consensus rules for the Heartwood network upgrade.
-    Heartwood,
-    /// The consensus rules for the Canopy network upgrade.
-    Canopy,
-    /// The consensus rules for the NU5 (Network Upgrade 5) which introduced
-    /// the Orchard shielded pool and Halo 2 proving system.
-    Nu5,
-    /// The consensus rules for the NU6 (Network Upgrade 6).
-    Nu6,
-    /// Candidates for future consensus rules; this branch will never
-    /// activate on mainnet.
-    ZFuture,
-}
+pub struct BranchId(zcash_protocol::consensus::BranchId);
 
 /// Converts a 32-bit numeric branch ID into the corresponding enum variant
 impl TryFrom<u32> for BranchId {
     type Error = &'static str;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0 => Ok(BranchId::Sprout),
-            0x5ba8_1b19 => Ok(BranchId::Overwinter),
-            0x76b8_09bb => Ok(BranchId::Sapling),
-            0x2bb4_0e60 => Ok(BranchId::Blossom),
-            0xf5b9_230b => Ok(BranchId::Heartwood),
-            0xe9ff_75a6 => Ok(BranchId::Canopy),
-            0xc2d6_d0b4 => Ok(BranchId::Nu5),
-            0xc8e7_1055 => Ok(BranchId::Nu6),
-            0xffff_ffff => Ok(BranchId::ZFuture),
-            _ => Err("Unknown consensus branch ID"),
-        }
+        zcash_protocol::consensus::BranchId::try_from(value).map(BranchId)
     }
 }
 
 /// Converts a BranchId enum variant to its raw 32-bit numeric value
 impl From<BranchId> for u32 {
     fn from(consensus_branch_id: BranchId) -> u32 {
-        match consensus_branch_id {
-            BranchId::Sprout => 0,
-            BranchId::Overwinter => 0x5ba8_1b19,
-            BranchId::Sapling => 0x76b8_09bb,
-            BranchId::Blossom => 0x2bb4_0e60,
-            BranchId::Heartwood => 0xf5b9_230b,
-            BranchId::Canopy => 0xe9ff_75a6,
-            BranchId::Nu5 => 0xc2d6_d0b4,
-            BranchId::Nu6 => 0xc8e7_1055,
-            BranchId::ZFuture => 0xffff_ffff,
-        }
+        u32::from(consensus_branch_id.0)
     }
 }
 
@@ -98,44 +57,24 @@ impl Parse for BranchId {
     }
 }
 
-impl From<BranchId> for String {
-    fn from(branch_id: BranchId) -> String {
-        match branch_id {
-            BranchId::Sprout => "Sprout".to_string(),
-            BranchId::Overwinter => "Overwinter".to_string(),
-            BranchId::Sapling => "Sapling".to_string(),
-            BranchId::Blossom => "Blossom".to_string(),
-            BranchId::Heartwood => "Heartwood".to_string(),
-            BranchId::Canopy => "Canopy".to_string(),
-            BranchId::Nu5 => "Nu5".to_string(),
-            BranchId::Nu6 => "Nu6".to_string(),
-            BranchId::ZFuture => "ZFuture".to_string(),
-        }
-    }
-}
-
-impl TryFrom<String> for BranchId {
-    type Error = anyhow::Error;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        match value.as_str() {
-            "Sprout" => Ok(BranchId::Sprout),
-            "Overwinter" => Ok(BranchId::Overwinter),
-            "Sapling" => Ok(BranchId::Sapling),
-            "Blossom" => Ok(BranchId::Blossom),
-            "Heartwood" => Ok(BranchId::Heartwood),
-            "Canopy" => Ok(BranchId::Canopy),
-            "Nu5" => Ok(BranchId::Nu5),
-            "Nu6" => Ok(BranchId::Nu6),
-            "ZFuture" => Ok(BranchId::ZFuture),
-            _ => bail!("Invalid BranchId string: {}", value),
+impl Display for BranchId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            zcash_protocol::consensus::BranchId::Sprout => write!(f, "Sprout"),
+            zcash_protocol::consensus::BranchId::Overwinter => write!(f, "Overwinter"),
+            zcash_protocol::consensus::BranchId::Sapling => write!(f, "Sapling"),
+            zcash_protocol::consensus::BranchId::Blossom => write!(f, "Blossom"),
+            zcash_protocol::consensus::BranchId::Heartwood => write!(f, "Heartwood"),
+            zcash_protocol::consensus::BranchId::Canopy => write!(f, "Canopy"),
+            zcash_protocol::consensus::BranchId::Nu5 => write!(f, "Nu5"),
+            zcash_protocol::consensus::BranchId::Nu6 => write!(f, "Nu6"),
         }
     }
 }
 
 impl From<BranchId> for CBOR {
     fn from(value: BranchId) -> Self {
-        String::from(value).into()
+        u32::from(value).into()
     }
 }
 
@@ -143,7 +82,7 @@ impl TryFrom<CBOR> for BranchId {
     type Error = anyhow::Error;
 
     fn try_from(cbor: CBOR) -> Result<Self> {
-        cbor.try_into_text()?.try_into()
+        BranchId::try_from(u32::try_from(cbor)?).map_err(|e| anyhow::anyhow!(e))
     }
 }
 
@@ -153,17 +92,17 @@ impl crate::RandomInstance for BranchId {
         use rand::Rng;
         let mut rng = rand::thread_rng();
         let random_value: u32 = rng.gen_range(0..=8);
-        match random_value {
-            0 => BranchId::Sprout,
-            1 => BranchId::Overwinter,
-            2 => BranchId::Sapling,
-            3 => BranchId::Blossom,
-            4 => BranchId::Heartwood,
-            5 => BranchId::Canopy,
-            6 => BranchId::Nu5,
-            7 => BranchId::Nu6,
-            _ => BranchId::ZFuture,
-        }
+        BranchId(match random_value {
+            0 => zcash_protocol::consensus::BranchId::Sprout,
+            1 => zcash_protocol::consensus::BranchId::Overwinter,
+            2 => zcash_protocol::consensus::BranchId::Sapling,
+            3 => zcash_protocol::consensus::BranchId::Blossom,
+            4 => zcash_protocol::consensus::BranchId::Heartwood,
+            5 => zcash_protocol::consensus::BranchId::Canopy,
+            6 => zcash_protocol::consensus::BranchId::Nu5,
+            7 => zcash_protocol::consensus::BranchId::Nu6,
+            _ => unreachable!(),
+        })
     }
 }
 

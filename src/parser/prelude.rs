@@ -31,6 +31,6 @@
 //! `std::prelude`) of providing the most commonly needed imports in a single module.
 
 #[doc(hidden)]
-pub use super::parser_impl::*;
-#[doc(hidden)]
 pub use super::parseable_types::*;
+#[doc(hidden)]
+pub use super::parser_impl::*;

@@ -79,11 +79,11 @@
 //! ```
 
 // Macros
-mod mod_use_macro;
 mod blob_macro;
 mod data_macro;
-mod string_macro;
 mod envelope_macros;
+mod mod_use_macro;
+mod string_macro;
 mod test_roundtrip_macros;
 
 #[cfg(test)]
@@ -151,7 +151,7 @@ mod_use!(zewif_envelope);
 mod_use!(zewif_impl);
 mod_use!(zewif_wallet);
 
-use std::fmt::{self, Display, Formatter, Debug};
+use std::fmt::{self, Debug, Display, Formatter};
 
 #[doc(hidden)]
 pub struct NoQuotesDebugOption<'a, T>(pub &'a Option<T>);

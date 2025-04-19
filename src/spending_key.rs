@@ -1,4 +1,5 @@
-use super::{Blob, sapling::SaplingSpendingKey};
+use super::Blob;
+use crate::sapling::SaplingExtendedSpendingKey;
 use crate::test_envelope_roundtrip;
 use anyhow::{Context, bail};
 use bc_envelope::prelude::*;
@@ -13,8 +14,7 @@ use bc_envelope::prelude::*;
 /// # Zcash Concept Relation
 /// In Zcash, spending keys represent the highest level of control over funds:
 ///
-/// - **Sapling spending keys**: Used for Sapling shielded addresses (zs-prefixed)
-/// - **Raw keys**: Used for backward compatibility or other protocols
+/// - **Sapling extended spending keys**: Used for Sapling shielded addresses (zs-prefixed)
 ///
 /// The key hierarchy in Zcash allows deriving less-privileged keys from spending keys:
 /// ```text
@@ -26,75 +26,19 @@ use bc_envelope::prelude::*;
 /// During wallet migration, spending keys are preserved exactly as they exist in the
 /// source wallet to maintain complete control over funds. Each variant preserves the
 /// appropriate protocol-specific key material.
-///
-/// # Examples
-/// ```
-/// # use zewif::{SpendingKey, Blob, sapling::SaplingSpendingKey, u256};
-/// // Create a Sapling spending key
-/// let ask = u256::default();
-/// let nsk = u256::default();
-/// let ovk = u256::default();
-/// let sapling_key = SaplingSpendingKey::new(ask, nsk, ovk);
-/// let spending_key = SpendingKey::Sapling(sapling_key);
-///
-/// // Create a raw spending key
-/// let raw_key_data = Blob::<32>::default();
-/// let raw_spending_key = SpendingKey::Raw(raw_key_data);
-/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub enum SpendingKey {
     /// Sapling protocol spending key with full cryptographic components
-    Sapling(SaplingSpendingKey),
-    /// Raw key data format for backward compatibility or other protocols
-    Raw(Blob<32>),
-}
-
-impl SpendingKey {
-    /// Creates a new Sapling spending key from a SaplingSpendingKey instance.
-    ///
-    /// This method wraps a protocol-specific Sapling spending key in the generic
-    /// SpendingKey enum.
-    ///
-    /// # Examples
-    /// ```
-    /// # use zewif::{SpendingKey, sapling::SaplingSpendingKey, u256};
-    /// // Create a Sapling spending key
-    /// let ask = u256::default();
-    /// let nsk = u256::default();
-    /// let ovk = u256::default();
-    /// let sapling_key = SaplingSpendingKey::new(ask, nsk, ovk);
-    ///
-    /// // Wrap it in the generic SpendingKey enum
-    /// let spending_key = SpendingKey::new_sapling(sapling_key);
-    /// ```
-    pub fn new_sapling(key: SaplingSpendingKey) -> Self {
-        SpendingKey::Sapling(key)
-    }
-
-    /// Creates a raw spending key (for backward compatibility).
-    ///
-    /// This method creates a spending key that contains raw key material without
-    /// additional protocol-specific structure. It's primarily used for backward
-    /// compatibility with legacy wallet formats or for protocols that don't have
-    /// specialized key structures.
-    ///
-    /// # Examples
-    /// ```
-    /// # use zewif::{SpendingKey, Blob};
-    /// // Create a raw key from 32 bytes of data
-    /// let key_data = Blob::<32>::default();
-    /// let raw_key = SpendingKey::new_raw(key_data);
-    /// ```
-    pub fn new_raw(key_data: Blob<32>) -> Self {
-        SpendingKey::Raw(key_data)
-    }
+    Sapling(SaplingExtendedSpendingKey),
 }
 
 impl From<SpendingKey> for Envelope {
     fn from(value: SpendingKey) -> Self {
         match value {
-            SpendingKey::Sapling(sapling_spending_key) => sapling_spending_key.into(),
-            SpendingKey::Raw(blob) => Envelope::new(CBOR::from(blob)),
+            SpendingKey::Sapling(sapling_spending_key) => {
+                Envelope::new(CBOR::from(sapling_spending_key.to_vec()))
+                    .add_type("SaplingExtendedSpendingKey")
+            }
         }
         .add_type("SpendingKey")
     }
@@ -104,12 +48,14 @@ impl TryFrom<Envelope> for SpendingKey {
     type Error = anyhow::Error;
 
     fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope.check_type_envelope("SpendingKey").context("SpendingKey")?;
+        envelope
+            .check_type_envelope("SpendingKey")
+            .context("SpendingKey")?;
         let subject = envelope.subject();
-        if let Ok(sapling_spending_key) = SaplingSpendingKey::try_from(envelope.clone()) {
-            Ok(SpendingKey::Sapling(sapling_spending_key))
-        } else if let Ok(blob) = Blob::try_from(subject.clone()) {
-            Ok(SpendingKey::Raw(blob))
+        if subject.has_type_envelope("SaplingExtendedSpendingKey") {
+            let extsk =
+                SaplingExtendedSpendingKey::from_vec(Blob::<169>::try_from(subject)?.to_vec())?;
+            Ok(SpendingKey::Sapling(extsk))
         } else {
             bail!("Invalid SpendingKey envelope: {}", envelope.format());
         }
@@ -119,11 +65,7 @@ impl TryFrom<Envelope> for SpendingKey {
 #[cfg(test)]
 impl crate::RandomInstance for SpendingKey {
     fn random() -> Self {
-        if rand::random::<bool>() {
-            Self::Sapling(SaplingSpendingKey::random())
-        } else {
-            Self::Raw(Blob::random())
-        }
+        Self::Sapling(SaplingExtendedSpendingKey::from_vec(Blob::<169>::random().to_vec()).unwrap())
     }
 }
 
