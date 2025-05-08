@@ -45,10 +45,10 @@ accounts, addresses, transactions, and keys</li>
 <li><code>zewif-zingo</code>: Zingo-specific integration for migration (future)</li>
 </ul>
 <h3 id="usage-examples"><a class="doc-anchor" href="#usage-examples">§</a>Usage Examples</h3>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>zewif::{Zewif, ZewifWallet, Network, Account, Address};
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>zewif::{Zewif, ZewifWallet, Network, Account, Address, BlockHeight};
 
 <span class="comment">// Create a new ZeWIF container
-</span><span class="kw">let </span><span class="kw-2">mut </span>zewif = Zewif::new();
+</span><span class="kw">let </span><span class="kw-2">mut </span>zewif = Zewif::new(BlockHeight::from_u32(<span class="number">2000000</span>));
 
 <span class="comment">// Create a new wallet for the main network
 </span><span class="kw">let </span><span class="kw-2">mut </span>wallet = ZewifWallet::new(Network::Main);
