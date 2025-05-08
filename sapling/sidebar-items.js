@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["Address","MerkleHashSapling","SaplingExtendedFullViewingKey","SaplingExtendedSpendingKey","SaplingIncomingViewingKey","SaplingSentOutput","SaplingWitness"]};
