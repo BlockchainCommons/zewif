@@ -1,4 +1,4 @@
-use crate::{Bip39Mnemonic, Seed};
+use crate::{Bip39Mnemonic, LegacySeed};
 use anyhow::{Context, Result, bail};
 use bc_envelope::prelude::*;
 
@@ -41,7 +41,7 @@ use bc_envelope::prelude::*;
 ///
 /// # Examples
 /// ```
-/// # use zewif::{SeedMaterial, Blob, Bip39Mnemonic, Seed, MnemonicLanguage};
+/// # use zewif::{SeedMaterial, Blob, Bip39Mnemonic, LegacySeed, MnemonicLanguage};
 /// // Create from a BIP-39 mnemonic phrase
 /// let language = MnemonicLanguage::English;
 /// let mnemonic = SeedMaterial::Bip39Mnemonic(
@@ -49,16 +49,15 @@ use bc_envelope::prelude::*;
 /// );
 ///
 /// // Create from a pre-BIP39 raw seed
-/// let raw_seed = [0u8; 32];
-/// let seed = Seed::new(raw_seed);
-/// let binary_seed = SeedMaterial::Seed(seed);
+/// let seed = LegacySeed::new([0u8; 32].to_vec().into(), None);
+/// let binary_seed = SeedMaterial::LegacySeed(seed);
 /// ```
 #[derive(Clone, PartialEq)]
 pub enum SeedMaterial {
     /// A BIP-39 mnemonic phrase (typically 12 or 24 words) used as a human-readable seed
     Bip39Mnemonic(Bip39Mnemonic),
     /// A raw 32-byte seed predating the BIP-39 standard
-    Seed(Seed),
+    LegacySeed(LegacySeed),
 }
 
 impl std::fmt::Debug for SeedMaterial {
@@ -67,7 +66,7 @@ impl std::fmt::Debug for SeedMaterial {
             Self::Bip39Mnemonic(phrase) => {
                 write!(f, "SeedMaterial::Bip39Mnemonic(\"{:?}\")", phrase)
             }
-            Self::Seed(seed) => write!(f, "SeedMaterial::Seed({:?})", seed),
+            Self::LegacySeed(seed) => write!(f, "SeedMaterial::LegacySeed({:?})", seed),
         }
     }
 }
@@ -78,7 +77,7 @@ impl std::fmt::Display for SeedMaterial {
             Self::Bip39Mnemonic(phrase) => {
                 write!(f, "SeedMaterial::Bip39Mnemonic(\"{:?}\")", phrase)
             }
-            Self::Seed(seed) => write!(f, "SeedMaterial::Seed({:?})", seed),
+            Self::LegacySeed(seed) => write!(f, "SeedMaterial::LegacySeed({:?})", seed),
         }
     }
 }
@@ -87,7 +86,7 @@ impl From<SeedMaterial> for Envelope {
     fn from(value: SeedMaterial) -> Self {
         match value {
             SeedMaterial::Bip39Mnemonic(mnemonic) => Envelope::new(mnemonic),
-            SeedMaterial::Seed(seed) => Envelope::new(seed),
+            SeedMaterial::LegacySeed(seed) => Envelope::new(seed),
         }
         .add_type("SeedMaterial")
     }
@@ -102,8 +101,8 @@ impl TryFrom<Envelope> for SeedMaterial {
             .context("SeedMaterial")?;
         if let Ok(mnemonic) = Bip39Mnemonic::try_from(envelope.clone()) {
             Ok(SeedMaterial::Bip39Mnemonic(mnemonic))
-        } else if let Ok(seed) = Seed::try_from(envelope.clone()) {
-            Ok(SeedMaterial::Seed(seed))
+        } else if let Ok(seed) = LegacySeed::try_from(envelope.clone()) {
+            Ok(SeedMaterial::LegacySeed(seed))
         } else {
             bail!("Invalid SeedMaterial envelope")
         }
@@ -112,7 +111,7 @@ impl TryFrom<Envelope> for SeedMaterial {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Bip39Mnemonic, Seed, test_envelope_roundtrip};
+    use crate::{Bip39Mnemonic, LegacySeed, test_envelope_roundtrip};
 
     use super::SeedMaterial;
 
@@ -121,7 +120,7 @@ mod tests {
             if rand::random::<bool>() {
                 SeedMaterial::Bip39Mnemonic(Bip39Mnemonic::random())
             } else {
-                SeedMaterial::Seed(Seed::random())
+                SeedMaterial::LegacySeed(LegacySeed::random())
             }
         }
     }

@@ -96,7 +96,7 @@ mod_use!(network);
 mod_use!(non_hardened_child_index);
 mod_use!(protocol_address);
 mod_use!(script);
-mod_use!(seed);
+mod_use!(legacy_seed);
 mod_use!(seed_material);
 mod_use!(seed_fingerprint);
 mod_use!(string_utils);

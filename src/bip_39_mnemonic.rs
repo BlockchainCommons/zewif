@@ -14,7 +14,7 @@ impl std::fmt::Debug for Bip39Mnemonic {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.debug_struct("MnemonicSeed")
             .field("language", &NoQuotesDebugOption(&self.language))
-            .field("mnemonic", &self.mnemonic)
+            .field("mnemonic", &"<elided>".to_string())
             .field(
                 "fingerprint",
                 &NoQuotesDebugOption(&self.fingerprint.map(|f| f.to_hex())),
