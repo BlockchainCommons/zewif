@@ -121,6 +121,11 @@ impl Data {
         self.0.to_vec()
     }
 
+    /// Returns the underlying value as a byte slice.
+    pub fn as_slice(&self) -> &[u8] {
+        &self.0[..]
+    }
+
     /// Creates a `Data` instance from a byte slice.
     ///
     /// # Examples
