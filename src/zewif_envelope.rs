@@ -66,7 +66,7 @@ impl ZewifEnvelope {
 
     pub fn compress(&mut self) -> Result<()> {
         if self.can_compress() {
-            let content = self.envelope.wrap_envelope().compress()?;
+            let content = self.envelope.wrap().compress()?;
             self.envelope = Envelope::new(self.id)
                 .add_type("Zewif")
                 .add_assertion("content", content);
@@ -82,7 +82,7 @@ impl ZewifEnvelope {
                 .envelope
                 .object_for_predicate("content")?
                 .uncompress()?
-                .unwrap_envelope()?;
+                .try_unwrap()?;
         } else {
             bail!("Cannot uncompress a Zewif that has not been compressed");
         }
