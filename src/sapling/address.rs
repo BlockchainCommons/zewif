@@ -1,7 +1,9 @@
-use super::{SaplingExtendedFullViewingKey, SaplingExtendedSpendingKey, SaplingIncomingViewingKey};
+use super::{
+    SaplingExtendedFullViewingKey, SaplingExtendedSpendingKey,
+    SaplingIncomingViewingKey,
+};
 use crate::{Blob, NoQuotesDebugOption, test_envelope_roundtrip};
 
-use anyhow::Context;
 use bc_envelope::prelude::*;
 
 /// A Zcash Sapling address and associated key data.
@@ -182,37 +184,34 @@ impl From<Address> for Envelope {
     fn from(value: Address) -> Self {
         Envelope::new(value.address)
             .add_type("SaplingAddress")
-            .add_optional_assertion("incoming_viewing_key", value.incoming_viewing_key)
+            .add_optional_assertion(
+                "incoming_viewing_key",
+                value.incoming_viewing_key,
+            )
             .add_optional_assertion("full_viewing_key", value.full_viewing_key)
             .add_optional_assertion("spending_key", value.spending_key)
-            .add_optional_assertion("diversifier_index", value.diversifier_index)
-            .add_optional_assertion("hd_derivation_path", value.hd_derivation_path)
+            .add_optional_assertion(
+                "diversifier_index",
+                value.diversifier_index,
+            )
+            .add_optional_assertion(
+                "hd_derivation_path",
+                value.hd_derivation_path,
+            )
     }
 }
 
 impl TryFrom<Envelope> for Address {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("SaplingAddress")
-            .context("SaplingAddress")?;
-        let address = envelope.extract_subject().context("address")?;
-        let incoming_viewing_key = envelope
-            .try_optional_object_for_predicate("incoming_viewing_key")
-            .context("incoming_viewing_key")?;
-        let full_viewing_key = envelope
-            .try_optional_object_for_predicate("full_viewing_key")
-            .context("full_viewing_key")?;
-        let spending_key = envelope
-            .try_optional_object_for_predicate("spending_key")
-            .context("spending_key")?;
-        let diversifier_index = envelope
-            .try_optional_object_for_predicate("diversifier_index")
-            .context("diversifier_index")?;
-        let hd_derivation_path = envelope
-            .try_optional_object_for_predicate("hd_derivation_path")
-            .context("hd_derivation_path")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("SaplingAddress")?;
+        let address = envelope.extract_subject()?;
+        let incoming_viewing_key = envelope.try_optional_object_for_predicate("incoming_viewing_key")?;
+        let full_viewing_key = envelope.try_optional_object_for_predicate("full_viewing_key")?;
+        let spending_key = envelope.try_optional_object_for_predicate("spending_key")?;
+        let diversifier_index = envelope.try_optional_object_for_predicate("diversifier_index")?;
+        let hd_derivation_path = envelope.try_optional_object_for_predicate("hd_derivation_path")?;
         Ok(Address {
             address,
             incoming_viewing_key,

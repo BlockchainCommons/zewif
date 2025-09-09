@@ -87,6 +87,7 @@ mod_use!(blob);
 mod_use!(block_hash);
 mod_use!(block_height);
 mod_use!(data);
+mod_use!(error);
 mod_use!(derivation_info);
 mod_use!(incremental_witness);
 mod_use!(indexed);
@@ -108,7 +109,7 @@ mod_use!(zewif_envelope);
 mod_use!(zewif_impl);
 mod_use!(zewif_wallet);
 
-pub use blob::HexParseError;
+pub use blob::Blob;
 use std::fmt::{self, Debug, Display, Formatter};
 
 #[doc(hidden)]

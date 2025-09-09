@@ -10,7 +10,7 @@ bc-components = "^0.24.0"
 bc-envelope = "^0.33.0"
 bc-crypto = "^0.9.0"
 
-anyhow = "1.0.95"
+thiserror = "^2.0"
 chrono = "0.4.39"
 hex = "0.4.3"
 

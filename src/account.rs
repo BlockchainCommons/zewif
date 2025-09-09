@@ -1,4 +1,3 @@
-use anyhow::{Context, Result};
 use bc_envelope::prelude::*;
 use std::collections::HashSet;
 
@@ -250,37 +249,26 @@ impl From<Account> for Envelope {
 }
 
 impl TryFrom<Envelope> for Account {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self> {
-        envelope.check_type_envelope("Account").context("account")?;
-        let index = envelope.extract_subject().context("index")?;
-        let name = envelope
-            .extract_object_for_predicate("name")
-            .context("name")?;
-        let birthday_height = envelope
-            .extract_optional_object_for_predicate("birthday_height")
-            .context("birthday_height")?;
-        let birthday_block = envelope
-            .extract_optional_object_for_predicate("birthday_block")
-            .context("birthday_block")?;
-        let zip32_account_id = envelope
-            .extract_optional_object_for_predicate("zip32_account_id")
-            .context("zip32_account_id")?;
-        let relevant_transactions = envelope
-            .extract_object_for_predicate("relevant_transactions")
-            .context("relevant_transactions")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("Account")?;
+        let index = envelope.extract_subject()?;
+        let name = envelope.extract_object_for_predicate("name")?;
+        let birthday_height = envelope.extract_optional_object_for_predicate("birthday_height")?;
+        let birthday_block = envelope.extract_optional_object_for_predicate("birthday_block")?;
+        let zip32_account_id = envelope.extract_optional_object_for_predicate("zip32_account_id")?;
+        let relevant_transactions = envelope.extract_object_for_predicate("relevant_transactions")?;
 
-        let addresses =
-            envelope_indexed_objects_for_predicate(&envelope, "address").context("addresses")?;
-        let sapling_sent_outputs =
-            envelope_indexed_objects_for_predicate(&envelope, "sapling_sent_output")
-                .context("sapling_sent_outputs")?;
-        let orchard_sent_outputs =
-            envelope_indexed_objects_for_predicate(&envelope, "orchard_sent_output")
-                .context("orchard_sent_outputs")?;
+        let addresses = envelope_indexed_objects_for_predicate(&envelope, "address")
+            .map_err(|e| bc_envelope::Error::General(format!("addresses: {}", e)))?;
+        let sapling_sent_outputs = envelope_indexed_objects_for_predicate(&envelope, "sapling_sent_output")
+            .map_err(|e| bc_envelope::Error::General(format!("sapling_sent_outputs: {}", e)))?;
+        let orchard_sent_outputs = envelope_indexed_objects_for_predicate(&envelope, "orchard_sent_output")
+            .map_err(|e| bc_envelope::Error::General(format!("orchard_sent_outputs: {}", e)))?;
 
-        let attachments = Attachments::try_from_envelope(&envelope).context("attachments")?;
+        let attachments = Attachments::try_from_envelope(&envelope)
+            .map_err(|e| bc_envelope::Error::General(format!("attachments: {}", e)))?;
 
         Ok(Self {
             index,

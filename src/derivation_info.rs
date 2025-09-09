@@ -1,4 +1,3 @@
-use anyhow::Context;
 use bc_envelope::prelude::*;
 
 use crate::NonHardenedChildIndex;
@@ -114,16 +113,12 @@ impl From<DerivationInfo> for Envelope {
 }
 
 impl TryFrom<Envelope> for DerivationInfo {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("DerivationInfo")
-            .context("DerivationInfo")?;
-        let change = envelope.extract_subject().context("change")?;
-        let address_index = envelope
-            .extract_object_for_predicate("address_index")
-            .context("address_index")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("DerivationInfo")?;
+        let change = envelope.extract_subject()?;
+        let address_index = envelope.extract_object_for_predicate("address_index")?;
         Ok(Self {
             change,
             address_index,

@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, bail};
+use crate::error::{Error, Result};
 use bc_envelope::prelude::*;
 
 /// The language used for BIP-39/BIP-44 mnemonic seed phrases in a wallet.
@@ -29,7 +29,7 @@ use bc_envelope::prelude::*;
 /// # Examples
 /// ```
 /// # use zewif::MnemonicLanguage;
-/// # use anyhow::Result;
+/// # use zewif::Result;
 /// // Create a language identifier from a numeric value
 /// let language = MnemonicLanguage::from_u32(0)?;
 /// assert_eq!(language, MnemonicLanguage::English);
@@ -39,7 +39,7 @@ use bc_envelope::prelude::*;
 ///
 /// // Languages can be displayed as strings
 /// println!("Mnemonic language: {}", language); // Outputs "Mnemonic language: English"
-/// # Ok::<(), anyhow::Error>(())
+/// # Ok::<(), zewif::Error>(())
 /// ```
 #[derive(Clone, Copy, PartialEq)]
 pub enum MnemonicLanguage {
@@ -82,7 +82,7 @@ impl MnemonicLanguage {
     /// # Examples
     /// ```
     /// # use zewif::MnemonicLanguage;
-    /// # use anyhow::Result;
+    /// # use zewif::Result;
     /// // Create English (most common) language
     /// let english = MnemonicLanguage::from_u32(0)?;
     ///
@@ -92,7 +92,7 @@ impl MnemonicLanguage {
     /// // Invalid value results in error
     /// let result = MnemonicLanguage::from_u32(99);
     /// assert!(result.is_err());
-    /// # Ok::<(), anyhow::Error>(())
+    /// # Ok::<(), zewif::Error>(())
     /// ```
     pub fn from_u32(value: u32) -> Result<Self> {
         match value {
@@ -106,7 +106,7 @@ impl MnemonicLanguage {
             7 => Ok(MnemonicLanguage::Korean),
             8 => Ok(MnemonicLanguage::Portuguese),
             9 => Ok(MnemonicLanguage::Spanish),
-            _ => bail!("Invalid language value: {}", value),
+            _ => Err(Error::InvalidLanguage(value.to_string())),
         }
     }
 
@@ -176,9 +176,9 @@ impl From<MnemonicLanguage> for String {
 }
 
 impl TryFrom<String> for MnemonicLanguage {
-    type Error = anyhow::Error;
+    type Error = Error;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
+    fn try_from(value: String) -> crate::error::Result<Self> {
         match value.as_str() {
             "en" => Ok(MnemonicLanguage::English),
             "zh-Hans" => Ok(MnemonicLanguage::SimplifiedChinese),
@@ -190,7 +190,7 @@ impl TryFrom<String> for MnemonicLanguage {
             "ko" => Ok(MnemonicLanguage::Korean),
             "pt" => Ok(MnemonicLanguage::Portuguese),
             "es" => Ok(MnemonicLanguage::Spanish),
-            _ => bail!("Invalid MnemonicLanguage string: {}", value),
+            _ => Err(Error::InvalidMnemonicLanguage(value)),
         }
     }
 }
@@ -216,11 +216,11 @@ impl From<MnemonicLanguage> for Envelope {
 }
 
 impl TryFrom<Envelope> for MnemonicLanguage {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        let language_str: String = envelope.extract_subject().context("MnemonicLanguage")?;
-        MnemonicLanguage::try_from(language_str)
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        let language_str: String = envelope.extract_subject()?;
+        MnemonicLanguage::try_from(language_str).map_err(|e| e.into())
     }
 }
 
@@ -232,7 +232,8 @@ mod tests {
 
     impl crate::RandomInstance for MnemonicLanguage {
         fn random() -> Self {
-            MnemonicLanguage::from_u32(rand::random::<u8>() as u32 % 10).unwrap()
+            MnemonicLanguage::from_u32(rand::random::<u8>() as u32 % 10)
+                .unwrap()
         }
     }
 

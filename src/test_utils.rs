@@ -1,5 +1,6 @@
 use bc_envelope::prelude::*;
 use std::collections::{HashMap, HashSet};
+use std::error::Error;
 
 pub trait RandomInstance {
     fn random() -> Self;
@@ -20,7 +21,9 @@ pub trait RandomInstance {
     where
         Self: Sized,
     {
-        panic!("RandomInstance::random_with_size is not implemented for this type");
+        panic!(
+            "RandomInstance::random_with_size is not implemented for this type"
+        );
     }
 
     fn opt_random_with_size(size: usize) -> Option<Self>
@@ -60,7 +63,8 @@ impl RandomInstance for String {
     fn random() -> Self {
         let mut rng = bc_rand::thread_rng();
         let len = rand::Rng::gen_range(&mut rng, 10..=100);
-        let alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let alphabet =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         let mut s = String::new();
         for _ in 0..len {
             let c = alphabet
@@ -134,7 +138,7 @@ pub fn test_envelope_roundtrip<T>(iterations: usize, print: bool)
 where
     T: RandomInstance
         + Into<Envelope>
-        + TryFrom<Envelope, Error = anyhow::Error>
+        + TryFrom<Envelope, Error = bc_envelope::Error>
         + Clone
         + std::fmt::Debug
         + PartialEq,
@@ -178,7 +182,11 @@ impl RandomInstance for Attachments {
         let mut rng = bc_rand::thread_rng();
         let len = rand::Rng::gen_range(&mut rng, 0..=3);
         for _ in 0..len {
-            attachments.add(String::random(), String::random(), String::opt_random());
+            attachments.add(
+                String::random(),
+                String::random(),
+                String::opt_random(),
+            );
         }
         attachments
     }

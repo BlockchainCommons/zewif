@@ -1,5 +1,4 @@
-use crate::{Bip39Mnemonic, LegacySeed};
-use anyhow::{Context, Result, bail};
+use crate::{Bip39Mnemonic, LegacySeed, error::Error};
 use bc_envelope::prelude::*;
 
 /// Source material used to generate cryptographic keys in a Zcash wallet.
@@ -93,18 +92,16 @@ impl From<SeedMaterial> for Envelope {
 }
 
 impl TryFrom<Envelope> for SeedMaterial {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("SeedMaterial")
-            .context("SeedMaterial")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("SeedMaterial")?;
         if let Ok(mnemonic) = Bip39Mnemonic::try_from(envelope.clone()) {
             Ok(SeedMaterial::Bip39Mnemonic(mnemonic))
         } else if let Ok(seed) = LegacySeed::try_from(envelope.clone()) {
             Ok(SeedMaterial::LegacySeed(seed))
         } else {
-            bail!("Invalid SeedMaterial envelope")
+            Err(Error::InvalidSeedMaterial.into())
         }
     }
 }
@@ -125,5 +122,5 @@ mod tests {
         }
     }
 
-    test_envelope_roundtrip!(SeedMaterial, 10, true);
+    test_envelope_roundtrip!(SeedMaterial);
 }

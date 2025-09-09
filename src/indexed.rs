@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error::Result;
 use bc_envelope::prelude::*;
 
 pub trait Indexed {
@@ -29,20 +29,30 @@ impl<T: Indexed> SetIndexes<T> for Option<Vec<T>> {
     }
 }
 
-pub fn envelope_optional_indexed_objects_for_predicate<T>(envelope: &Envelope, predicate: impl AsRef<str>) -> Result<Option<Vec<T>>>
+pub fn envelope_optional_indexed_objects_for_predicate<T>(
+    envelope: &Envelope,
+    predicate: impl AsRef<str>,
+) -> Result<Option<Vec<T>>>
 where
-    T: Indexed + TryFrom<Envelope, Error = anyhow::Error> + 'static,
+    T: Indexed + TryFrom<Envelope, Error = bc_envelope::Error> + 'static,
 {
-    let mut vec = envelope.try_objects_for_predicate::<T>(predicate.as_ref())?;
+    let mut vec = envelope
+        .try_objects_for_predicate::<T>(predicate.as_ref())
+        .map_err(crate::error::Error::from)?;
     vec.sort_by_key(|input| input.index());
     Ok((!vec.is_empty()).then_some(vec))
 }
 
-pub fn envelope_indexed_objects_for_predicate<T>(envelope: &Envelope, predicate: impl AsRef<str>) -> Result<Vec<T>>
+pub fn envelope_indexed_objects_for_predicate<T>(
+    envelope: &Envelope,
+    predicate: impl AsRef<str>,
+) -> Result<Vec<T>>
 where
-    T: Indexed + TryFrom<Envelope, Error = anyhow::Error> + 'static,
+    T: Indexed + TryFrom<Envelope, Error = bc_envelope::Error> + 'static,
 {
-    let mut vec = envelope.try_objects_for_predicate::<T>(predicate.as_ref())?;
+    let mut vec = envelope
+        .try_objects_for_predicate::<T>(predicate.as_ref())
+        .map_err(crate::error::Error::from)?;
     vec.sort_by_key(|input| input.index());
     Ok(vec)
 }

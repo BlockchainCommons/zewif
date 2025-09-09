@@ -1,4 +1,3 @@
-use anyhow::{Context, Result};
 use bc_envelope::prelude::*;
 
 use crate::{MnemonicLanguage, NoQuotesDebugOption, SeedFingerprint};
@@ -24,7 +23,10 @@ impl std::fmt::Debug for Bip39Mnemonic {
 }
 
 impl Bip39Mnemonic {
-    pub fn new(mnemonic: impl AsRef<str>, language: Option<MnemonicLanguage>) -> Self {
+    pub fn new(
+        mnemonic: impl AsRef<str>,
+        language: Option<MnemonicLanguage>,
+    ) -> Self {
         Self {
             mnemonic: mnemonic.as_ref().to_string(),
             language,
@@ -67,24 +69,16 @@ impl From<Bip39Mnemonic> for Envelope {
 }
 
 impl TryFrom<Envelope> for Bip39Mnemonic {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("Bip39Mnemonic")
-            .context("Bip39Mnemonic")?;
-        let mnemonic = envelope.extract_subject().context("mnemonic")?;
-        let language = envelope
-            .try_optional_object_for_predicate("language")
-            .context("language")?;
-        let fingerprint = envelope
-            .try_optional_object_for_predicate("fingerprint")
-            .context("fingerprint")?;
-        Ok(Self {
-            mnemonic,
-            language,
-            fingerprint,
-        })
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("Bip39Mnemonic")?;
+        let mnemonic = envelope.extract_subject()?;
+        let language =
+            envelope.try_optional_object_for_predicate("language")?;
+        let fingerprint =
+            envelope.try_optional_object_for_predicate("fingerprint")?;
+        Ok(Self { mnemonic, language, fingerprint })
     }
 }
 

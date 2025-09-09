@@ -1,5 +1,4 @@
 use super::Data;
-use anyhow::{Context, Result};
 use bc_envelope::prelude::*;
 use std::ops::{
     Index, IndexMut, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
@@ -213,10 +212,10 @@ impl From<Script> for Envelope {
 }
 
 impl TryFrom<Envelope> for Script {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope.extract_subject().context("Script")
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.extract_subject()
     }
 }
 

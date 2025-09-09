@@ -144,7 +144,9 @@ macro_rules! data {
         impl TryFrom<bc_envelope::prelude::CBOR> for $name {
             type Error = dcbor::Error;
 
-            fn try_from(cbor: bc_envelope::prelude::CBOR) -> Result<Self, Self::Error> {
+            fn try_from(
+                cbor: bc_envelope::prelude::CBOR,
+            ) -> Result<Self, Self::Error> {
                 let bytes = cbor.try_into_byte_string()?;
                 Ok(Self::from_slice(&bytes))
             }

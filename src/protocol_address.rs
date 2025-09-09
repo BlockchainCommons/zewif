@@ -1,4 +1,8 @@
-use crate::{UnifiedAddress, sapling, transparent};
+use crate::{
+    UnifiedAddress,
+    error::Error,
+    sapling, transparent,
+};
 use bc_envelope::prelude::*;
 
 /// A protocol-specific Zcash address representation without additional metadata.
@@ -177,9 +181,9 @@ impl From<ProtocolAddress> for Envelope {
 }
 
 impl TryFrom<Envelope> for ProtocolAddress {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
         if envelope.has_type_envelope("TransparentAddress") {
             Ok(ProtocolAddress::Transparent(envelope.try_into()?))
         } else if envelope.has_type_envelope("SaplingAddress") {
@@ -187,7 +191,7 @@ impl TryFrom<Envelope> for ProtocolAddress {
         } else if envelope.has_type_envelope("UnifiedAddress") {
             Ok(ProtocolAddress::Unified(Box::new(envelope.try_into()?)))
         } else {
-            Err(anyhow::anyhow!("Invalid ProtocolAddress type"))
+            Err(Error::InvalidProtocolAddress.into())
         }
     }
 }
@@ -195,16 +199,24 @@ impl TryFrom<Envelope> for ProtocolAddress {
 #[cfg(test)]
 mod tests {
     use super::ProtocolAddress;
-    use crate::{UnifiedAddress, sapling, test_envelope_roundtrip, transparent};
+    use crate::{
+        UnifiedAddress, sapling, test_envelope_roundtrip, transparent,
+    };
 
     impl crate::RandomInstance for ProtocolAddress {
         fn random() -> Self {
             let mut rng = rand::thread_rng();
             let choice = rand::Rng::gen_range(&mut rng, 0..3);
             match choice {
-                0 => ProtocolAddress::Transparent(transparent::Address::random()),
-                1 => ProtocolAddress::Sapling(Box::new(sapling::Address::random())),
-                _ => ProtocolAddress::Unified(Box::new(UnifiedAddress::random())),
+                0 => {
+                    ProtocolAddress::Transparent(transparent::Address::random())
+                }
+                1 => ProtocolAddress::Sapling(Box::new(
+                    sapling::Address::random(),
+                )),
+                _ => {
+                    ProtocolAddress::Unified(Box::new(UnifiedAddress::random()))
+                }
             }
         }
     }

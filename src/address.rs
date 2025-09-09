@@ -1,5 +1,4 @@
 use crate::{DebugOption, Indexed};
-use anyhow::{Context, Result};
 use bc_envelope::prelude::*;
 
 use super::ProtocolAddress;
@@ -302,26 +301,19 @@ impl From<Address> for Envelope {
 }
 
 impl TryFrom<Envelope> for Address {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope.check_type_envelope("Address").context("Address")?;
-        let index = envelope.extract_subject().context("index")?;
-        let address = envelope
-            .try_object_for_predicate("address")
-            .context("address")?;
-        let name = envelope.try_object_for_predicate("name").context("name")?;
-        let purpose = envelope
-            .try_optional_object_for_predicate("purpose")
-            .context("purpose")?;
-        let attachments = Attachments::try_from_envelope(&envelope).context("attachments")?;
-        Ok(Address {
-            index,
-            address,
-            name,
-            purpose,
-            attachments,
-        })
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("Address")?;
+        let index = envelope.extract_subject()?;
+        let address = envelope.try_object_for_predicate("address")?;
+        let name = envelope.try_object_for_predicate("name")?;
+        let purpose = envelope.try_optional_object_for_predicate("purpose")?;
+        let attachments =
+            Attachments::try_from_envelope(&envelope).map_err(|e| {
+                bc_envelope::Error::General(format!("attachments: {}", e))
+            })?;
+        Ok(Address { index, address, name, purpose, attachments })
     }
 }
 

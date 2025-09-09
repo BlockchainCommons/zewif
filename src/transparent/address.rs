@@ -1,7 +1,6 @@
 use crate::DerivationInfo;
 
 use super::TransparentSpendAuthority;
-use anyhow::Context;
 use bc_envelope::prelude::*;
 
 /// A transparent address on the Zcash network.
@@ -117,7 +116,10 @@ impl Address {
     ///
     /// # Arguments
     /// * `spend_authority` - The spending authority to associate with this address
-    pub fn set_spend_authority(&mut self, spend_authority: TransparentSpendAuthority) {
+    pub fn set_spend_authority(
+        &mut self,
+        spend_authority: TransparentSpendAuthority,
+    ) {
         self.spend_authority = Some(spend_authority);
     }
 
@@ -155,24 +157,16 @@ impl From<Address> for Envelope {
 }
 
 impl TryFrom<Envelope> for Address {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("TransparentAddress")
-            .context("TransparentAddress")?;
-        let address = envelope.extract_subject().context("address")?;
-        let spend_authority = envelope
-            .try_optional_object_for_predicate("spend_authority")
-            .context("spend_authority")?;
-        let derivation_info = envelope
-            .try_optional_object_for_predicate("derivation_info")
-            .context("derivation_info")?;
-        Ok(Address {
-            address,
-            spend_authority,
-            derivation_info,
-        })
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("TransparentAddress")?;
+        let address = envelope.extract_subject()?;
+        let spend_authority =
+            envelope.try_optional_object_for_predicate("spend_authority")?;
+        let derivation_info =
+            envelope.try_optional_object_for_predicate("derivation_info")?;
+        Ok(Address { address, spend_authority, derivation_info })
     }
 }
 

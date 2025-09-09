@@ -1,4 +1,3 @@
-use anyhow::Context;
 use bc_envelope::prelude::*;
 
 use crate::{Amount, Indexed, Memo};
@@ -34,7 +33,7 @@ use crate::{Amount, Indexed, Memo};
 /// # Examples
 /// ```
 /// # use zewif::{orchard::OrchardSentOutput, Blob, Amount};
-/// # use anyhow::Result;
+/// # use zewif::Result;
 /// # fn example() -> Result<()> {
 /// // Create a new Orchard sent output with all required components
 /// let value = Amount::from_u64(10_000_000)?; // 0.1 ZEC
@@ -102,7 +101,7 @@ impl OrchardSentOutput {
     /// # Examples
     /// ```
     /// # use zewif::{orchard::OrchardSentOutput, Blob, Amount};
-    /// # use anyhow::Result;
+    /// # use zewif::Result;
     /// # fn example() -> Result<()> {
     /// let sent_output = OrchardSentOutput::from_parts(
     ///     0,
@@ -155,7 +154,7 @@ impl OrchardSentOutput {
     /// # Examples
     /// ```
     /// # use zewif::{orchard::OrchardSentOutput, Blob, Amount};
-    /// # use anyhow::Result;
+    /// # use zewif::Result;
     /// #
     /// # fn example() -> Result<()> {
     /// # let value = Amount::from_u64(15_000_000)?;
@@ -181,7 +180,7 @@ impl OrchardSentOutput {
     /// # Examples
     /// ```
     /// # use zewif::{orchard::OrchardSentOutput, Blob, Amount};
-    /// # use anyhow::Result;
+    /// # use zewif::Result;
     /// #
     /// # fn example() -> Result<()> {
     /// # let mut sent_output = OrchardSentOutput::from_parts(
@@ -219,22 +218,14 @@ impl From<OrchardSentOutput> for Envelope {
 }
 
 impl TryFrom<Envelope> for OrchardSentOutput {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("OrchardSentOutput")
-            .context("OrchardSentOutput")?;
-        let index = envelope.extract_subject().context("index")?;
-        let recipient_address = envelope
-            .extract_object_for_predicate("recipient_address")
-            .context("recipient_address")?;
-        let value = envelope
-            .extract_object_for_predicate("value")
-            .context("value")?;
-        let memo = envelope
-            .extract_optional_object_for_predicate("memo")
-            .context("memo")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("OrchardSentOutput")?;
+        let index = envelope.extract_subject()?;
+        let recipient_address = envelope.extract_object_for_predicate("recipient_address")?;
+        let value = envelope.extract_object_for_predicate("value")?;
+        let memo = envelope.extract_optional_object_for_predicate("memo")?;
 
         Ok(OrchardSentOutput {
             index,

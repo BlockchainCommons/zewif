@@ -1,4 +1,3 @@
-use anyhow::{Context, Result};
 use bc_envelope::prelude::*;
 
 use crate::{Data, NoQuotesDebugOption, SeedFingerprint};
@@ -23,10 +22,7 @@ impl std::fmt::Debug for LegacySeed {
 
 impl LegacySeed {
     pub fn new(seed_data: Data, fingerprint: Option<SeedFingerprint>) -> Self {
-        Self {
-            seed_data,
-            fingerprint,
-        }
+        Self { seed_data, fingerprint }
     }
 
     pub fn seed_data(&self) -> &Data {
@@ -47,20 +43,14 @@ impl From<LegacySeed> for Envelope {
 }
 
 impl TryFrom<Envelope> for LegacySeed {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("LegacySeed")
-            .context("LegacySeed")?;
-        let seed_data = envelope.extract_subject().context("seed data")?;
-        let fingerprint = envelope
-            .try_optional_object_for_predicate("fingerprint")
-            .context("fingerprint")?;
-        Ok(Self {
-            seed_data,
-            fingerprint,
-        })
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("LegacySeed")?;
+        let seed_data = envelope.extract_subject()?;
+        let fingerprint =
+            envelope.try_optional_object_for_predicate("fingerprint")?;
+        Ok(Self { seed_data, fingerprint })
     }
 }
 

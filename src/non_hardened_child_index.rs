@@ -1,4 +1,3 @@
-use anyhow::Context;
 use bc_envelope::prelude::*;
 
 /// A non-hardened index used in hierarchical deterministic wallet derivation paths.
@@ -76,10 +75,10 @@ impl From<NonHardenedChildIndex> for Envelope {
 }
 
 impl TryFrom<Envelope> for NonHardenedChildIndex {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope.extract_subject().context("NonHardenedChildIndex")
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.extract_subject()
     }
 }
 

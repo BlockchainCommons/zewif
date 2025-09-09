@@ -1,7 +1,8 @@
 use super::Network;
 use super::{Account, SeedMaterial};
-use crate::{Indexed, NoQuotesDebugOption, envelope_indexed_objects_for_predicate};
-use anyhow::Context;
+use crate::{
+    Indexed, NoQuotesDebugOption, envelope_indexed_objects_for_predicate,
+};
 use bc_envelope::prelude::*;
 
 /// A complete Zcash wallet with multiple accounts and cryptographic key material.
@@ -129,17 +130,19 @@ impl From<ZewifWallet> for Envelope {
 
 #[rustfmt::skip]
 impl TryFrom<Envelope> for ZewifWallet {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
         envelope.check_type_envelope("ZewifWallet")?;
         let index = envelope.extract_subject()?;
         let network = envelope.extract_object_for_predicate("network")?;
         let seed_material = envelope.try_optional_object_for_predicate("seed_material")?;
 
-        let accounts = envelope_indexed_objects_for_predicate(&envelope, "account").context("accounts")?;
+        let accounts = envelope_indexed_objects_for_predicate(&envelope, "account")
+            .map_err(|e| bc_envelope::Error::General(format!("accounts: {}", e)))?;
 
-        let attachments = Attachments::try_from_envelope(&envelope).context("attachments")?;
+        let attachments = Attachments::try_from_envelope(&envelope)
+            .map_err(|e| bc_envelope::Error::General(format!("attachments: {}", e)))?;
 
         Ok(Self {
             index,

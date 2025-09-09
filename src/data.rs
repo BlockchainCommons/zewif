@@ -1,8 +1,9 @@
 use std::ops::{
-    Index, IndexMut, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
+    Index, IndexMut, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo,
+    RangeToInclusive,
 };
 
-use anyhow::{Context, Result};
+use crate::error::Result;
 use bc_envelope::prelude::*;
 
 /// A variable-size byte array wrapper for safely handling binary data of arbitrary length.
@@ -298,7 +299,10 @@ impl Index<RangeToInclusive<usize>> for Data {
 }
 
 impl IndexMut<RangeToInclusive<usize>> for Data {
-    fn index_mut(&mut self, range: RangeToInclusive<usize>) -> &mut Self::Output {
+    fn index_mut(
+        &mut self,
+        range: RangeToInclusive<usize>,
+    ) -> &mut Self::Output {
         &mut self.0[range]
     }
 }
@@ -373,10 +377,10 @@ impl From<Data> for Envelope {
 }
 
 impl TryFrom<Envelope> for Data {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope.extract_subject().context("Data")
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.extract_subject()
     }
 }
 

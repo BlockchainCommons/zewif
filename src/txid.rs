@@ -1,5 +1,4 @@
-use crate::HexParseError;
-use anyhow::{Context, Result};
+use crate::error::{Error, Result};
 use bc_envelope::prelude::*;
 use std::{
     fmt,
@@ -98,15 +97,12 @@ impl TxId {
     /// expected[0] = 1;
     /// assert_eq!(blob.as_ref(), &expected);
     /// ```
-    pub fn from_hex(hex: &str) -> Result<Self, HexParseError> {
-        let mut data = hex::decode(hex).map_err(crate::HexParseError::HexInvalid)?;
+    pub fn from_hex(hex: &str) -> Result<Self> {
+        let mut data = hex::decode(hex)?;
         data.reverse();
 
         Ok(Self(<[u8; 32]>::try_from(&data[..]).map_err(|_| {
-            crate::HexParseError::SliceInvalid {
-                expected: 64,
-                actual: hex.len(),
-            }
+            Error::HexLengthMismatch { expected: 32, actual: data.len() }
         })?))
     }
 
@@ -122,9 +118,8 @@ impl TxId {
     /// ```no_run
     /// # use std::io::Cursor;
     /// # use zewif::TxId;
-    /// # use anyhow::Result;
     /// #
-    /// # fn example() -> Result<()> {
+    /// # fn example() -> std::io::Result<()> {
     /// // Create a cursor with 32 bytes
     /// let data = vec![0u8; 32];
     /// let mut cursor = Cursor::new(data);
@@ -152,9 +147,8 @@ impl TxId {
     /// ```no_run
     /// # use std::io::Cursor;
     /// # use zewif::TxId;
-    /// # use anyhow::Result;
     /// #
-    /// # fn example() -> Result<()> {
+    /// # fn example() -> std::io::Result<()> {
     /// let txid = TxId::from_bytes([0u8; 32]);
     /// let mut buffer = Vec::new();
     ///
@@ -209,10 +203,10 @@ impl From<TxId> for Envelope {
 }
 
 impl TryFrom<Envelope> for TxId {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope.extract_subject().context("TxId")
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.extract_subject()
     }
 }
 

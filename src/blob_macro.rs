@@ -68,7 +68,9 @@ macro_rules! blob {
             ///
             /// # Errors
             /// Returns an error if the slice's length doesn't match the expected size ($size).
-            pub fn from_slice(data: &[u8]) -> Result<Self, std::array::TryFromSliceError> {
+            pub fn from_slice(
+                data: &[u8],
+            ) -> Result<Self, std::array::TryFromSliceError> {
                 Ok(Self(<[u8; $size]>::try_from(data)?))
             }
 
@@ -76,28 +78,35 @@ macro_rules! blob {
             ///
             /// # Errors
             /// Returns an error if the vector's length doesn't match the expected size ($size).
-            pub fn from_vec(data: Vec<u8>) -> Result<Self, std::array::TryFromSliceError> {
+            pub fn from_vec(
+                data: Vec<u8>,
+            ) -> Result<Self, std::array::TryFromSliceError> {
                 Ok(Self(<[u8; $size]>::try_from(&data[..])?))
             }
 
             /// Parses an instance from a hex string.
-            pub fn from_hex(hex: &str) -> Result<Self, $crate::HexParseError> {
-                let data = hex::decode(hex).map_err(|e| $crate::HexParseError::HexInvalid(e))?;
-                Self::from_vec(data).map_err(|_| $crate::HexParseError::SliceInvalid {
-                    expected: $size * 2,
-                    actual: hex.len(),
+            pub fn from_hex(hex: &str) -> $crate::Result<Self> {
+                let data = hex::decode(hex)?;
+                let data_len = data.len();
+                Self::from_vec(data).map_err(|_| {
+                    $crate::Error::HexLengthMismatch {
+                        expected: $size,
+                        actual: data_len,
+                    }
                 })
             }
 
             /// Parses an instance from a hex string in reversed byte order, such as is used for
             /// transaction identifiers and block hashes.
-            pub fn from_reversed_hex(hex: &str) -> Result<Self, $crate::HexParseError> {
-                let mut data =
-                    hex::decode(hex).map_err(|e| $crate::HexParseError::HexInvalid(e))?;
+            pub fn from_reversed_hex(hex: &str) -> $crate::Result<Self> {
+                let mut data = hex::decode(hex)?;
+                let data_len = data.len();
                 data.reverse();
-                Self::from_vec(data).map_err(|_| $crate::HexParseError::SliceInvalid {
-                    expected: $size * 2,
-                    actual: hex.len(),
+                Self::from_vec(data).map_err(|_| {
+                    $crate::Error::HexLengthMismatch {
+                        expected: $size,
+                        actual: data_len,
+                    }
                 })
             }
 
@@ -179,7 +188,9 @@ macro_rules! blob {
         impl TryFrom<bc_envelope::prelude::CBOR> for $name {
             type Error = dcbor::Error;
 
-            fn try_from(cbor: bc_envelope::prelude::CBOR) -> Result<Self, Self::Error> {
+            fn try_from(
+                cbor: bc_envelope::prelude::CBOR,
+            ) -> Result<Self, Self::Error> {
                 let bytes = cbor.try_into_byte_string()?;
                 Self::from_slice(&bytes).map_err(|_| {
                     dcbor::Error::msg(format!(

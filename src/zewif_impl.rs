@@ -1,4 +1,3 @@
-use anyhow::Context;
 use bc_components::ARID;
 use bc_envelope::prelude::*;
 use std::collections::HashMap;
@@ -128,20 +127,22 @@ impl From<Zewif> for Envelope {
 
 #[rustfmt::skip]
 impl TryFrom<Envelope> for Zewif {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
         envelope.check_type_envelope("Zewif")?;
         let id = envelope.extract_subject()?;
 
-        let wallets = envelope_indexed_objects_for_predicate(&envelope, "wallet")?;
+        let wallets = envelope_indexed_objects_for_predicate(&envelope, "wallet")
+            .map_err(|e| bc_envelope::Error::General(format!("wallets: {}", e)))?;
 
         let transactions = envelope
             .try_objects_for_predicate::<Transaction>("transaction")?
             .into_iter().map(|tx| (tx.txid(), tx)).collect();
 
-        let export_height = envelope.extract_object_for_predicate("export_height").context("export_height")?;
-        let attachments = Attachments::try_from_envelope(&envelope).context("attachments")?;
+        let export_height = envelope.extract_object_for_predicate("export_height")?;
+        let attachments = Attachments::try_from_envelope(&envelope)
+            .map_err(|e| bc_envelope::Error::General(format!("attachments: {}", e)))?;
 
         Ok(Self {
             id,

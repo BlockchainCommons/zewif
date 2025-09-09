@@ -3,7 +3,7 @@ use std::{
     ops::{Add, Mul, Neg, Sub},
 };
 
-use anyhow::{Error, Result, anyhow, bail};
+use crate::error::{Error, Result};
 use bc_envelope::prelude::*;
 
 use crate::format_signed_zats_as_zec;
@@ -41,7 +41,7 @@ pub const MAX_BALANCE: i64 = MAX_MONEY as i64;
 /// # Examples
 /// ```
 /// # use zewif::Amount;
-/// # use anyhow::Result;
+/// # use zewif::Result;
 /// #
 /// # fn example() -> Result<()> {
 /// // Create an amount of 1.5 ZEC (150,000,000 zatoshis)
@@ -96,9 +96,9 @@ impl Amount {
         if (-MAX_BALANCE..=MAX_BALANCE).contains(&amount) {
             Ok(Amount(amount))
         } else if amount < -MAX_BALANCE {
-            bail!("Amount underflow: {}", amount)
+            Err(Error::AmountUnderflow(amount as u64))
         } else {
-            bail!("Amount overflow: {}", amount)
+            Err(Error::AmountOverflow(amount as u64))
         }
     }
 
@@ -109,9 +109,9 @@ impl Amount {
         if (0..=MAX_BALANCE).contains(&amount) {
             Ok(Amount(amount))
         } else if amount < 0 {
-            bail!("Amount underflow: {}", amount)
+            Err(Error::AmountUnderflow(amount as u64))
         } else {
-            bail!("Amount overflow: {}", amount)
+            Err(Error::AmountOverflow(amount as u64))
         }
     }
 
@@ -122,7 +122,7 @@ impl Amount {
         if amount <= MAX_MONEY {
             Ok(Amount(amount as i64))
         } else {
-            bail!("Amount overflow: {}", amount)
+            Err(Error::AmountOverflow(amount))
         }
     }
 
@@ -182,7 +182,7 @@ impl Amount {
     /// # Examples
     /// ```
     /// # use zewif::Amount;
-    /// # use anyhow::Result;
+    /// # use zewif::Result;
     /// #
     /// # fn example() -> Result<()> {
     /// // Sum several ZEC amounts
@@ -234,11 +234,11 @@ impl From<&Amount> for i64 {
 impl TryFrom<Amount> for u64 {
     type Error = Error;
 
-    fn try_from(value: Amount) -> Result<Self, Self::Error> {
+    fn try_from(value: Amount) -> crate::error::Result<Self> {
         value
             .0
             .try_into()
-            .map_err(|_| anyhow!("Amount underflow: {}", value.0))
+            .map_err(|_| Error::AmountUnderflow(value.0 as u64))
     }
 }
 
@@ -341,9 +341,9 @@ impl From<Amount> for Envelope {
 }
 
 impl TryFrom<Envelope> for Amount {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
         envelope.extract_subject()
     }
 }
@@ -357,7 +357,8 @@ mod tests {
     impl crate::RandomInstance for Amount {
         fn random() -> Self {
             let mut rng = bc_rand::thread_rng();
-            let value = rand::Rng::gen_range(&mut rng, -MAX_BALANCE..=MAX_BALANCE);
+            let value =
+                rand::Rng::gen_range(&mut rng, -MAX_BALANCE..=MAX_BALANCE);
             Self(value)
         }
     }

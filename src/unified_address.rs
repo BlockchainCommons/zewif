@@ -1,5 +1,4 @@
 use crate::Blob;
-use anyhow::Context;
 use bc_envelope::prelude::*;
 
 /// A multi-protocol Zcash address that can contain components from different Zcash protocols.
@@ -136,19 +135,13 @@ impl From<UnifiedAddress> for Envelope {
 }
 
 impl TryFrom<Envelope> for UnifiedAddress {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("UnifiedAddress")
-            .context("UnifiedAddress")?;
-        let address = envelope.extract_subject().context("address")?;
-        let diversifier_index = envelope
-            .try_optional_object_for_predicate("diversifier_index")
-            .context("diversifier_index")?;
-        let hd_derivation_path = envelope
-            .try_optional_object_for_predicate("hd_derivation_path")
-            .context("hd_derivation_path")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("UnifiedAddress")?;
+        let address = envelope.extract_subject()?;
+        let diversifier_index = envelope.try_optional_object_for_predicate("diversifier_index")?;
+        let hd_derivation_path = envelope.try_optional_object_for_predicate("hd_derivation_path")?;
 
         Ok(UnifiedAddress {
             address,

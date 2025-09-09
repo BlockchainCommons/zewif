@@ -1,4 +1,3 @@
-use anyhow::Context;
 use bc_envelope::prelude::*;
 
 use crate::{Amount, Indexed, Memo};
@@ -32,7 +31,7 @@ use crate::{Amount, Indexed, Memo};
 /// # Examples
 /// ```
 /// # use zewif::{sapling::SaplingSentOutput, Blob, Amount};
-/// # use anyhow::Result;
+/// # use zewif::Result;
 /// # fn example() -> Result<()> {
 /// // Create a new sent output
 /// let mut sent_output = SaplingSentOutput::new();
@@ -113,12 +112,7 @@ impl SaplingSentOutput {
         value: Amount,
         memo: Option<Memo>,
     ) -> Self {
-        Self {
-            index,
-            recipient_address,
-            value,
-            memo,
-        }
+        Self { index, recipient_address, value, memo }
     }
 
     /// Returns the string representation of the address used in construction of the output.
@@ -148,7 +142,7 @@ impl SaplingSentOutput {
     /// # Examples
     /// ```
     /// # use zewif::{sapling::SaplingSentOutput, Amount};
-    /// # use anyhow::Result;
+    /// # use zewif::Result;
     /// # fn example() -> Result<()> {
     /// let mut sent_output = SaplingSentOutput::new();
     /// sent_output.set_value(Amount::from_u64(10_000_000)?); // 0.1 ZEC
@@ -171,7 +165,7 @@ impl SaplingSentOutput {
     /// # Examples
     /// ```
     /// # use zewif::{sapling::SaplingSentOutput, Amount};
-    /// # use anyhow::Result;
+    /// # use zewif::Result;
     /// # fn example() -> Result<()> {
     /// let mut sent_output = SaplingSentOutput::new();
     /// let amount = Amount::from_u64(50_000_000)?; // 0.5 ZEC
@@ -211,29 +205,17 @@ impl From<SaplingSentOutput> for Envelope {
 }
 
 impl TryFrom<Envelope> for SaplingSentOutput {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("SaplingSentOutput")
-            .context("SaplingSentOutput")?;
-        let index = envelope.extract_subject().context("index")?;
-        let recipient_address = envelope
-            .extract_object_for_predicate("recipient_address")
-            .context("recipient_address")?;
-        let value = envelope
-            .extract_object_for_predicate("value")
-            .context("value")?;
-        let memo = envelope
-            .extract_optional_object_for_predicate("memo")
-            .context("memo")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("SaplingSentOutput")?;
+        let index = envelope.extract_subject()?;
+        let recipient_address =
+            envelope.extract_object_for_predicate("recipient_address")?;
+        let value = envelope.extract_object_for_predicate("value")?;
+        let memo = envelope.extract_optional_object_for_predicate("memo")?;
 
-        Ok(SaplingSentOutput {
-            index,
-            recipient_address,
-            value,
-            memo,
-        })
+        Ok(SaplingSentOutput { index, recipient_address, value, memo })
     }
 }
 

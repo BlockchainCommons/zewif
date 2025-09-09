@@ -1,5 +1,4 @@
 use super::TransparentSpendingKey;
-use anyhow::{Context, Result, bail};
 use bc_envelope::prelude::*;
 
 /// The cryptographic authorization needed to spend funds from a transparent Zcash address.
@@ -57,18 +56,16 @@ impl From<TransparentSpendAuthority> for Envelope {
 }
 
 impl TryFrom<Envelope> for TransparentSpendAuthority {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("TransparentSpendAuthority")
-            .context("TransparentSpendAuthority")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("TransparentSpendAuthority")?;
         if let Ok(spending_key) = TransparentSpendingKey::try_from(envelope.clone()) {
             Ok(TransparentSpendAuthority::SpendingKey(spending_key))
         } else if envelope.extract_subject::<String>()? == "Derived" {
             Ok(TransparentSpendAuthority::Derived)
         } else {
-            bail!("Invalid TransparentSpendAuthority envelope")
+            Err(crate::error::Error::InvalidTransparentSpendAuthority.into())
         }
     }
 }

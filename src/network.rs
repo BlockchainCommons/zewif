@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, bail};
+use crate::error::Error;
 use bc_envelope::prelude::*;
 
 /// Represents a Zcash network environment (mainnet, testnet, or regtest).
@@ -55,9 +55,9 @@ impl From<Network> for String {
 }
 
 impl TryFrom<String> for Network {
-    type Error = anyhow::Error;
+    type Error = Error;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
+    fn try_from(value: String) -> crate::error::Result<Self> {
         if value == "main" {
             Ok(Network::Main)
         } else if value == "test" {
@@ -65,7 +65,7 @@ impl TryFrom<String> for Network {
         } else if value == "regtest" {
             Ok(Network::Regtest)
         } else {
-            bail!("Invalid network identifier: {}", value)
+            Err(Error::InvalidNetwork(value))
         }
     }
 }
@@ -91,11 +91,11 @@ impl From<Network> for Envelope {
 }
 
 impl TryFrom<Envelope> for Network {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        let network_str: String = envelope.extract_subject().context("Network")?;
-        Network::try_from(network_str)
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        let network_str: String = envelope.extract_subject()?;
+        Network::try_from(network_str).map_err(|e| e.into())
     }
 }
 

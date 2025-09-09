@@ -1,4 +1,3 @@
-use anyhow::Context;
 use bc_envelope::prelude::*;
 
 use crate::{IncrementalWitness, blob, blob_envelope};
@@ -45,7 +44,9 @@ blob_envelope!(MerkleHashOrchard);
 /// Without this witness data, unspent notes cannot be spent as it would be impossible
 /// to prove their inclusion in the note commitment tree.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct OrchardWitness(IncrementalWitness<ORCHARD_COMMITMENT_TREE_DEPTH, MerkleHashOrchard>);
+pub struct OrchardWitness(
+    IncrementalWitness<ORCHARD_COMMITMENT_TREE_DEPTH, MerkleHashOrchard>,
+);
 
 impl From<OrchardWitness> for Envelope {
     fn from(value: OrchardWitness) -> Self {
@@ -55,40 +56,36 @@ impl From<OrchardWitness> for Envelope {
             .add_assertion("merkle_path", value.0.merkle_path().to_vec())
             .add_assertion("anchor", *value.0.anchor())
             .add_assertion("anchor_tree_size", value.0.anchor_tree_size())
-            .add_assertion("anchor_frontier", value.0.anchor_frontier().to_vec())
+            .add_assertion(
+                "anchor_frontier",
+                value.0.anchor_frontier().to_vec(),
+            )
     }
 }
 
 impl TryFrom<Envelope> for OrchardWitness {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
-        envelope
-            .check_type_envelope("OrchardWitness")
-            .context("OrchardWitness")?;
-        let note_commitment = envelope.try_as().context("note_commitment")?;
-        let note_position = envelope
-            .extract_object_for_predicate("note_position")
-            .context("note_position")?;
-        let merkle_path = envelope
-            .extract_object_for_predicate("merkle_path")
-            .context("merkle_path")?;
-        let anchor = envelope
-            .extract_object_for_predicate("anchor")
-            .context("anchor")?;
-        let anchor_tree_size = envelope
-            .extract_object_for_predicate("anchor_tree_size")
-            .context("anchor_tree_size")?;
-        let anchor_frontier = envelope
-            .extract_object_for_predicate("anchor_frontier")
-            .context("anchor_frontier")?;
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.check_type_envelope("OrchardWitness")?;
+        let note_commitment =
+            envelope.extract_subject::<MerkleHashOrchard>()?;
+        let note_position =
+            envelope.extract_object_for_predicate("note_position")?;
+        let merkle_path =
+            envelope.extract_object_for_predicate("merkle_path")?;
+        let anchor = envelope.extract_object_for_predicate("anchor")?;
+        let anchor_tree_size =
+            envelope.extract_object_for_predicate("anchor_tree_size")?;
+        let anchor_frontier =
+            envelope.extract_object_for_predicate("anchor_frontier")?;
         Ok(Self(IncrementalWitness::from_parts(
             note_commitment,
             note_position,
             merkle_path,
             anchor,
             anchor_tree_size,
-            anchor_frontier
+            anchor_frontier,
         )))
     }
 }

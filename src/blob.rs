@@ -1,33 +1,11 @@
-use anyhow::{Context, Error, Result};
+use crate::error::{Error, Result};
 use bc_envelope::prelude::*;
-use hex::FromHexError;
 use std::{
-    array::TryFromSliceError,
     fmt,
     ops::{
         Index, IndexMut, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
     },
 };
-
-/// Errors that can occur in decoding a blob from its hex-encoded representation.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum HexParseError {
-    SliceInvalid { expected: usize, actual: usize },
-    HexInvalid(FromHexError),
-}
-
-impl fmt::Display for HexParseError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            HexParseError::SliceInvalid { expected, actual } => {
-                write!(f, "Expected {} bytes, got {}", expected, actual)
-            }
-            HexParseError::HexInvalid(e) => write!(f, "Not a valid hex string: {}", e),
-        }
-    }
-}
-
-impl std::error::Error for HexParseError {}
 
 /// A fixed-size byte array wrapper for safely handling binary data of known length.
 ///
@@ -166,7 +144,7 @@ impl<const N: usize> Blob<N> {
     /// let result = Blob::<5>::from_slice(slice);
     /// assert!(result.is_err());
     /// ```
-    pub fn from_slice(data: &[u8]) -> Result<Self, TryFromSliceError> {
+    pub fn from_slice(data: &[u8]) -> Result<Self> {
         Ok(Self(<[u8; N]>::try_from(data)?))
     }
 
@@ -183,7 +161,7 @@ impl<const N: usize> Blob<N> {
     /// let blob = Blob::<4>::from_vec(vec.clone()).unwrap();
     /// assert_eq!(blob.to_vec(), vec);
     /// ```
-    pub fn from_vec(data: Vec<u8>) -> Result<Self, TryFromSliceError> {
+    pub fn from_vec(data: Vec<u8>) -> Result<Self> {
         Self::from_slice(&data)
     }
 
@@ -197,11 +175,12 @@ impl<const N: usize> Blob<N> {
     /// let blob = Blob::<4>::from_hex(hex).unwrap();
     /// assert_eq!(blob.as_slice(), &[1, 2, 3, 4]);
     /// ```
-    pub fn from_hex(hex: &str) -> Result<Self, HexParseError> {
-        let data = hex::decode(hex).map_err(crate::HexParseError::HexInvalid)?;
-        Self::from_vec(data).map_err(|_| crate::HexParseError::SliceInvalid {
-            expected: N * 2,
-            actual: hex.len(),
+    pub fn from_hex(hex: &str) -> Result<Self> {
+        let data = hex::decode(hex)?;
+        let data_len = data.len();
+        Self::from_vec(data).map_err(|_| Error::HexLengthMismatch {
+            expected: N,
+            actual: data_len,
         })
     }
 }
@@ -369,10 +348,10 @@ impl<const N: usize> From<Blob<N>> for Envelope {
 }
 
 impl<const N: usize> TryFrom<Envelope> for Blob<N> {
-    type Error = Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self> {
-        envelope.extract_subject().context("Blob")
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
+        envelope.extract_subject()
     }
 }
 

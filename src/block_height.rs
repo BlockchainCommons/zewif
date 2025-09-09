@@ -219,9 +219,9 @@ impl From<BlockHeight> for Envelope {
 }
 
 impl TryFrom<Envelope> for BlockHeight {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
         envelope.extract_subject()
     }
 }

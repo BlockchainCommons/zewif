@@ -1,6 +1,5 @@
 use super::{BlockHeight, Data, TxId};
 use crate::TxBlockPosition;
-use anyhow::{Context, Result};
 use bc_envelope::prelude::*;
 
 /// A Zcash transaction that can combine transparent and multiple shielded protocol components.
@@ -140,24 +139,17 @@ impl From<Transaction> for Envelope {
 }
 
 impl TryFrom<Envelope> for Transaction {
-    type Error = anyhow::Error;
+    type Error = bc_envelope::Error;
 
-    fn try_from(envelope: Envelope) -> Result<Self, Self::Error> {
+    fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
         envelope.check_type_envelope("Transaction")?;
-        let txid = envelope.extract_subject().context("txid")?;
-        let raw = envelope
-            .try_optional_object_for_predicate("raw")
-            .context("raw")?;
-        let target_height = envelope
-            .try_optional_object_for_predicate("target_height")
-            .context("target_height")?;
-        let mined_height = envelope
-            .try_optional_object_for_predicate("mined_height")
-            .context("mined_height")?;
-        let block_position = envelope
-            .try_optional_object_for_predicate("block_position")
-            .context("block_position")?;
-        let attachments = Attachments::try_from_envelope(&envelope).context("attachments")?;
+        let txid = envelope.extract_subject()?;
+        let raw = envelope.try_optional_object_for_predicate("raw")?;
+        let target_height = envelope.try_optional_object_for_predicate("target_height")?;
+        let mined_height = envelope.try_optional_object_for_predicate("mined_height")?;
+        let block_position = envelope.try_optional_object_for_predicate("block_position")?;
+        let attachments = Attachments::try_from_envelope(&envelope)
+            .map_err(|e| bc_envelope::Error::General(format!("attachments: {}", e)))?;
 
         Ok(Self {
             txid,
