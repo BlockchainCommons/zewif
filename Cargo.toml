@@ -2,7 +2,7 @@
 name = "zewif"
 version = "0.1.0"
 edition = "2024"
-license = "MIT or Apache 2.0"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 dcbor = { version = "^0.22.0", features = ["anyhow"] }

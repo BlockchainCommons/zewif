@@ -1,4 +1,6 @@
-use anyhow::{Context, Result, bail};
+use std::str::FromStr;
+
+use anyhow::{Context, Result, anyhow};
 use bc_envelope::prelude::*;
 
 /// Represents a Zcash network environment (mainnet, testnet, or regtest).
@@ -44,13 +46,42 @@ pub enum Network {
     Regtest,
 }
 
+impl Network {
+    fn encode(&self) -> &'static str {
+        match self {
+            Network::Main => "main",
+            Network::Test => "test",
+            Network::Regtest => "regtest",
+        }
+    }
+
+    fn decode(value: &str) -> Option<Self> {
+        match value {
+            "main" => Some(Network::Main),
+            "test" => Some(Network::Test),
+            "regtest" => Some(Network::Regtest),
+            _ => None,
+        }
+    }
+}
+
+impl core::fmt::Display for Network {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.encode())
+    }
+}
+
+impl FromStr for Network {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Self::decode(s).ok_or(anyhow!("Invalid network identifier: {}", s))
+    }
+}
+
 impl From<Network> for String {
     fn from(value: Network) -> String {
-        match value {
-            Network::Main => "main".to_string(),
-            Network::Test => "test".to_string(),
-            Network::Regtest => "regtest".to_string(),
-        }
+        value.encode().to_string()
     }
 }
 
@@ -58,15 +89,7 @@ impl TryFrom<String> for Network {
     type Error = anyhow::Error;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        if value == "main" {
-            Ok(Network::Main)
-        } else if value == "test" {
-            Ok(Network::Test)
-        } else if value == "regtest" {
-            Ok(Network::Regtest)
-        } else {
-            bail!("Invalid network identifier: {}", value)
-        }
+        Self::decode(&value).ok_or(anyhow!("Invalid network identifier: {}", value))
     }
 }
 
