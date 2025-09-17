@@ -98,32 +98,3 @@ impl From<Error> for bc_envelope::Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
-
-pub trait StringContext<T> {
-    fn context(self, msg: impl Into<Cow<'static, str>>) -> Result<T>;
-    fn with_context<F>(self, f: F) -> Result<T>
-    where
-        F: FnOnce() -> String;
-}
-
-impl<T, E> StringContext<T> for std::result::Result<T, E>
-where
-    E: StdError + Send + Sync + 'static,
-{
-    fn context(self, msg: impl Into<Cow<'static, str>>) -> Result<T> {
-        self.map_err(|e| Error::Context {
-            message: msg.into(),
-            source: Box::new(e),
-        })
-    }
-
-    fn with_context<F>(self, f: F) -> Result<T>
-    where
-        F: FnOnce() -> String,
-    {
-        self.map_err(|e| Error::Context {
-            message: f().into(),
-            source: Box::new(e),
-        })
-    }
-}

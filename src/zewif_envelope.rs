@@ -1,7 +1,8 @@
-use crate::error::{Error, Result, StringContext};
+use crate::error::{Error, Result};
 use bc_components::{ARID, SymmetricKey};
 use bc_crypto::pbkdf2_hmac_sha256;
 use bc_envelope::prelude::*;
+use std::borrow::Cow;
 
 #[derive(Debug, Clone)]
 pub struct ZewifEnvelope {
@@ -14,7 +15,10 @@ impl ZewifEnvelope {
         if !envelope.has_type_envelope("Zewif") {
             return Err(Error::NotZewifEnvelope);
         }
-        let id = envelope.extract_subject().context("ID")?;
+        let id = envelope.extract_subject().map_err(|e| Error::Context {
+            message: Cow::Borrowed("ID"),
+            source: Box::new(e),
+        })?;
         Ok(Self { id, envelope })
     }
 
