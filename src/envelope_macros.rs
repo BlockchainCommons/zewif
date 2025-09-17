@@ -12,11 +12,16 @@ macro_rules! blob_envelope {
         impl TryFrom<bc_envelope::Envelope> for $name {
             type Error = bc_envelope::Error;
 
-            fn try_from(envelope: bc_envelope::Envelope) -> bc_envelope::Result<Self> {
+            fn try_from(
+                envelope: bc_envelope::Envelope,
+            ) -> bc_envelope::Result<Self> {
                 envelope.check_type_envelope(stringify!($name))?;
                 let bytes = envelope.subject().try_byte_string()?;
                 Self::try_from(bytes).map_err(|_| {
-                    bc_envelope::Error::General(format!("Invalid {} blob", stringify!($name)))
+                    bc_envelope::Error::General(format!(
+                        "Invalid {} blob",
+                        stringify!($name)
+                    ))
                 })
             }
         }
