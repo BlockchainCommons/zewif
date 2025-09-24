@@ -1,17 +1,21 @@
 //! # Zcash Wallet Interchange Format (ZeWIF)
 //!
-//! `zewif` is a library that defines a standard data format for migrating wallet data
-//! between different Zcash wallet implementations. It provides a comprehensive set of
-//! types, tools, and utilities for serializing, deserializing, and manipulating Zcash
-//! wallet data in a way that preserves all critical information during migration.
+//! `zewif` is a library that defines a standard data format for migrating
+//! wallet data between different Zcash wallet implementations. It provides a
+//! comprehensive set of types, tools, and utilities for serializing,
+//! deserializing, and manipulating Zcash wallet data in a way that preserves
+//! all critical information during migration.
 //!
 //! ## Core Features
 //!
-//! * **Complete Wallet Data Model**: Represents all aspects of a Zcash wallet including
-//!   accounts, addresses, transactions, and keys
-//! * **Multi-Protocol Support**: Handles the Transparent, Sapling, and Orchard Zcash protocols.
-//! * **Type-Safe Representation**: Uses Rust's type system to ensure correct handling of Zcash concepts
-//! * **Extensible Metadata**: Supports custom metadata through an attachments system
+//! * **Complete Wallet Data Model**: Represents all aspects of a Zcash wallet
+//!   including accounts, addresses, transactions, and keys
+//! * **Multi-Protocol Support**: Handles the Transparent, Sapling, and Orchard
+//!   Zcash protocols.
+//! * **Type-Safe Representation**: Uses Rust's type system to ensure correct
+//!   handling of Zcash concepts
+//! * **Extensible Metadata**: Supports custom metadata through an attachments
+//!   system
 //!
 //! ## Core Components
 //!
@@ -20,16 +24,20 @@
 //! - [`Zewif`]: The root container holding wallets and global transaction data
 //!   - [`ZewifWallet`]: Individual wallet with accounts and network context
 //!     - [`Account`]: Logical grouping of addresses and transaction references
-//!       - [`Address`]: Individual addresses of various types (transparent, shielded, unified)
+//!       - [`Address`]: Individual addresses of various types (transparent,
+//!         shielded, unified)
 //!   - [`Transaction`]: Complete transaction data (inputs, outputs, metadata)
 //!
 //! ## Protocol Support
 //!
 //! ZeWIF handles the Zcash protocol versions:
 //!
-//! - **Transparent**: Bitcoin-compatible public transactions ([`TransparentAddress`], [`TxIn`], [`TxOut`])
-//! - **Sapling**: Improved shielded protocol ([`sapling`] module, [`sapling::SaplingSentOutput`], etc.)
-//! - **Orchard**: Latest shielded protocol ([`orchard`] module, [`orchard::OrchardSentOutput`], etc.)
+//! - **Transparent**: Bitcoin-compatible public transactions
+//!   ([`TransparentAddress`], [`TxIn`], [`TxOut`])
+//! - **Sapling**: Improved shielded protocol ([`sapling`] module,
+//!   [`sapling::SaplingSentOutput`], etc.)
+//! - **Orchard**: Latest shielded protocol ([`orchard`] module,
+//!   [`orchard::OrchardSentOutput`], etc.)
 //!
 //! ## Integration Path
 //!
@@ -43,7 +51,7 @@
 //! ## Usage Examples
 //!
 //! ```no_run
-//! use zewif::{Zewif, ZewifWallet, Network, Account, Address, BlockHeight};
+//! use zewif::{Account, Address, BlockHeight, Network, Zewif, ZewifWallet};
 //!
 //! // Create a new ZeWIF container
 //! let mut zewif = Zewif::new(BlockHeight::from_u32(2000000));
@@ -109,8 +117,9 @@ mod_use!(zewif_envelope);
 mod_use!(zewif_impl);
 mod_use!(zewif_wallet);
 
-pub use blob::Blob;
 use std::fmt::{self, Debug, Display, Formatter};
+
+pub use blob::Blob;
 
 #[doc(hidden)]
 pub struct NoQuotesDebugOption<'a, T>(pub &'a Option<T>);
