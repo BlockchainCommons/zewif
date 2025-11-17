@@ -5,16 +5,16 @@ edition = "2024"
 license = "MIT or Apache 2.0"
 
 [dependencies]
-dcbor = "^0.23.0"
-bc-components = "^0.25.0"
-bc-envelope = "^0.34.0"
-bc-crypto = "^0.10.0"
+dcbor = "^0.23.3"
+bc-components = "^0.28.0"
+bc-envelope = "^0.37.0"
+bc-crypto = "^0.13.0"
 
 thiserror = "^2.0"
 chrono = "0.4.39"
 hex = "0.4.3"
 
-bc-rand = { version = "^0.4.0", optional = true }
+bc-rand = { version = "^0.4.2", optional = true }
 rand = { version = "^0.8.5", optional = true }
 
 [features]
@@ -23,5 +23,5 @@ with-context = []
 test-dependencies = ["dep:rand", "dep:bc-rand"]
 
 [dev-dependencies]
-bc-rand = "^0.4.0"
+bc-rand = "^0.4.2"
 rand = "^0.8.5"

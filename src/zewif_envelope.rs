@@ -85,7 +85,7 @@ impl ZewifEnvelope {
             self.envelope = self
                 .envelope
                 .object_for_predicate("content")?
-                .uncompress()?
+                .decompress()?
                 .try_unwrap()?;
         } else {
             return Err(Error::NotCompressed);
