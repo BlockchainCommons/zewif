@@ -205,7 +205,7 @@ impl TryFrom<Envelope> for Address {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("SaplingAddress")?;
+        envelope.check_type("SaplingAddress")?;
         let address = envelope.extract_subject()?;
         let incoming_viewing_key = envelope.try_optional_object_for_predicate("incoming_viewing_key")?;
         let full_viewing_key = envelope.try_optional_object_for_predicate("full_viewing_key")?;

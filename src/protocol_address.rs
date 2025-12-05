@@ -184,11 +184,11 @@ impl TryFrom<Envelope> for ProtocolAddress {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        if envelope.has_type_envelope("TransparentAddress") {
+        if envelope.has_type("TransparentAddress") {
             Ok(ProtocolAddress::Transparent(envelope.try_into()?))
-        } else if envelope.has_type_envelope("SaplingAddress") {
+        } else if envelope.has_type("SaplingAddress") {
             Ok(ProtocolAddress::Sapling(Box::new(envelope.try_into()?)))
-        } else if envelope.has_type_envelope("UnifiedAddress") {
+        } else if envelope.has_type("UnifiedAddress") {
             Ok(ProtocolAddress::Unified(Box::new(envelope.try_into()?)))
         } else {
             Err(Error::InvalidProtocolAddress.into())

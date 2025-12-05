@@ -208,7 +208,7 @@ impl TryFrom<Envelope> for SaplingSentOutput {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("SaplingSentOutput")?;
+        envelope.check_type("SaplingSentOutput")?;
         let index = envelope.extract_subject()?;
         let recipient_address =
             envelope.extract_object_for_predicate("recipient_address")?;

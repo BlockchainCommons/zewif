@@ -67,7 +67,7 @@ impl TryFrom<Envelope> for SaplingWitness {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("SaplingWitness")?;
+        envelope.check_type("SaplingWitness")?;
         let note_commitment =
             envelope.extract_subject::<MerkleHashSapling>()?;
         let note_position =

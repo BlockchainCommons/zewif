@@ -304,7 +304,7 @@ impl TryFrom<Envelope> for Address {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("Address")?;
+        envelope.check_type("Address")?;
         let index = envelope.extract_subject()?;
         let address = envelope.try_object_for_predicate("address")?;
         let name = envelope.try_object_for_predicate("name")?;

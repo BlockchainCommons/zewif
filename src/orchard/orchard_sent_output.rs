@@ -221,7 +221,7 @@ impl TryFrom<Envelope> for OrchardSentOutput {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("OrchardSentOutput")?;
+        envelope.check_type("OrchardSentOutput")?;
         let index = envelope.extract_subject()?;
         let recipient_address = envelope.extract_object_for_predicate("recipient_address")?;
         let value = envelope.extract_object_for_predicate("value")?;

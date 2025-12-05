@@ -59,7 +59,7 @@ impl TryFrom<Envelope> for TransparentSpendAuthority {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("TransparentSpendAuthority")?;
+        envelope.check_type("TransparentSpendAuthority")?;
         if let Ok(spending_key) = TransparentSpendingKey::try_from(envelope.clone()) {
             Ok(TransparentSpendAuthority::SpendingKey(spending_key))
         } else if envelope.extract_subject::<String>()? == "Derived" {

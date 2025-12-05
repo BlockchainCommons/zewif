@@ -142,7 +142,7 @@ impl TryFrom<Envelope> for Transaction {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("Transaction")?;
+        envelope.check_type("Transaction")?;
         let txid = envelope.extract_subject()?;
         let raw = envelope.try_optional_object_for_predicate("raw")?;
         let target_height = envelope.try_optional_object_for_predicate("target_height")?;

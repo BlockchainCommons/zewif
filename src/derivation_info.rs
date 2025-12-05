@@ -116,7 +116,7 @@ impl TryFrom<Envelope> for DerivationInfo {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("DerivationInfo")?;
+        envelope.check_type("DerivationInfo")?;
         let change = envelope.extract_subject()?;
         let address_index = envelope.extract_object_for_predicate("address_index")?;
         Ok(Self {

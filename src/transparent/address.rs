@@ -160,7 +160,7 @@ impl TryFrom<Envelope> for Address {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("TransparentAddress")?;
+        envelope.check_type("TransparentAddress")?;
         let address = envelope.extract_subject()?;
         let spend_authority =
             envelope.try_optional_object_for_predicate("spend_authority")?;

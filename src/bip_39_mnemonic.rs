@@ -72,7 +72,7 @@ impl TryFrom<Envelope> for Bip39Mnemonic {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("Bip39Mnemonic")?;
+        envelope.check_type("Bip39Mnemonic")?;
         let mnemonic = envelope.extract_subject()?;
         let language =
             envelope.try_optional_object_for_predicate("language")?;

@@ -1,8 +1,10 @@
-use crate::error::{Error, Result};
+use std::borrow::Cow;
+
 use bc_components::{ARID, SymmetricKey};
 use bc_crypto::pbkdf2_hmac_sha256;
 use bc_envelope::prelude::*;
-use std::borrow::Cow;
+
+use crate::error::{Error, Result};
 
 #[derive(Debug, Clone)]
 pub struct ZewifEnvelope {
@@ -12,7 +14,7 @@ pub struct ZewifEnvelope {
 
 impl ZewifEnvelope {
     pub fn new(envelope: Envelope) -> Result<Self> {
-        if !envelope.has_type_envelope("Zewif") {
+        if !envelope.has_type("Zewif") {
             return Err(Error::NotZewifEnvelope);
         }
         let id = envelope.extract_subject().map_err(|e| Error::Context {
@@ -22,17 +24,11 @@ impl ZewifEnvelope {
         Ok(Self { id, envelope })
     }
 
-    pub fn id(&self) -> ARID {
-        self.id
-    }
+    pub fn id(&self) -> ARID { self.id }
 
-    pub fn digest(&self) -> Digest {
-        self.envelope.digest().clone().into_owned()
-    }
+    pub fn digest(&self) -> Digest { self.envelope.digest() }
 
-    pub fn envelope(&self) -> &Envelope {
-        &self.envelope
-    }
+    pub fn envelope(&self) -> &Envelope { &self.envelope }
 
     pub fn obscured_content(&self) -> Option<Envelope> {
         self.envelope.object_for_predicate("content").ok()
@@ -52,21 +48,13 @@ impl ZewifEnvelope {
             .is_some_and(|content| content.is_encrypted())
     }
 
-    pub fn can_compress(&self) -> bool {
-        !self.is_obscured()
-    }
+    pub fn can_compress(&self) -> bool { !self.is_obscured() }
 
-    pub fn can_encrypt(&self) -> bool {
-        !self.is_encrypted()
-    }
+    pub fn can_encrypt(&self) -> bool { !self.is_encrypted() }
 
-    pub fn can_uncompress(&self) -> bool {
-        self.is_compressed()
-    }
+    pub fn can_uncompress(&self) -> bool { self.is_compressed() }
 
-    pub fn can_decrypt(&self) -> bool {
-        self.is_encrypted()
-    }
+    pub fn can_decrypt(&self) -> bool { self.is_encrypted() }
 
     pub fn compress(&mut self) -> Result<()> {
         if self.can_compress() {
@@ -94,7 +82,8 @@ impl ZewifEnvelope {
     }
 
     pub fn derive_encryption_key(password: impl AsRef<str>) -> SymmetricKey {
-        let key_bytes = pbkdf2_hmac_sha256(password.as_ref(), b"Zewif", 100_000, 32);
+        let key_bytes =
+            pbkdf2_hmac_sha256(password.as_ref(), b"Zewif", 100_000, 32);
         SymmetricKey::from_data_ref(key_bytes).unwrap()
     }
 
@@ -125,9 +114,8 @@ impl ZewifEnvelope {
 
 #[cfg(test)]
 mod tests {
-    use crate::{RandomInstance, Zewif};
-
     use super::*;
+    use crate::{RandomInstance, Zewif};
 
     #[test]
     fn test_new_envelope() {
@@ -166,8 +154,10 @@ mod tests {
         // Check the size of the compressed envelope
         let ze_size = ze.envelope().to_cbor_data().len();
         let ze_compressed_size = ze_compressed.envelope().to_cbor_data().len();
-        let _percent_saved = 100.0 * (1.0 - (ze_compressed_size as f64 / ze_size as f64));
-        // println!("Compressed:\n  Before: {}, After: {}, Savings:{:.2}%", ze_size, ze_compressed_size, _percent_saved);
+        let _percent_saved =
+            100.0 * (1.0 - (ze_compressed_size as f64 / ze_size as f64));
+        // println!("Compressed:\n  Before: {}, After: {}, Savings:{:.2}%",
+        // ze_size, ze_compressed_size, _percent_saved);
 
         // Uncompress the ZewifEnvelope and make sure it matches the original
         let mut ze_uncompressed = ze_compressed.clone();
@@ -206,18 +196,25 @@ mod tests {
         let mut ze_compressed_encrypted = ze.clone();
         ze_compressed_encrypted.compress().unwrap();
         ze_compressed_encrypted.encrypt(&key).unwrap();
-        let ze_compressed_encrypted_size = ze_compressed_encrypted.envelope().to_cbor_data().len();
-        let _percent_saved = 100.0 * (1.0 - (ze_compressed_encrypted_size as f64 / ze_size as f64));
-        // println!("Encrypted and Compressed:\n  Before: {}, After: {}, Savings:{:.2}%", ze_size, ze_compressed_encrypted_size, _percent_saved);
+        let ze_compressed_encrypted_size =
+            ze_compressed_encrypted.envelope().to_cbor_data().len();
+        let _percent_saved = 100.0
+            * (1.0 - (ze_compressed_encrypted_size as f64 / ze_size as f64));
+        // println!("Encrypted and Compressed:\n  Before: {}, After: {},
+        // Savings:{:.2}%", ze_size, ze_compressed_encrypted_size,
+        // _percent_saved);
 
-        // Decompress then decrypt the ZewifEnvelope and make sure it matches the original
+        // Decompress then decrypt the ZewifEnvelope and make sure it matches
+        // the original
         let mut ze_decompressed_decrypted = ze_compressed_encrypted.clone();
         ze_decompressed_decrypted.decrypt(&key).unwrap();
         ze_decompressed_decrypted.uncompress().unwrap();
         assert_eq!(ze.digest(), ze_decompressed_decrypted.digest());
 
         // Reconstruct the Zewif instance from the decrypted envelope
-        let zewif2 = Zewif::try_from(ze_decompressed_decrypted.envelope().clone()).unwrap();
+        let zewif2 =
+            Zewif::try_from(ze_decompressed_decrypted.envelope().clone())
+                .unwrap();
         // Check that the reconstructed Zewif instance matches the original
         assert_eq!(zewif, zewif2);
     }

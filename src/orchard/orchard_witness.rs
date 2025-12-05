@@ -67,7 +67,7 @@ impl TryFrom<Envelope> for OrchardWitness {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("OrchardWitness")?;
+        envelope.check_type("OrchardWitness")?;
         let note_commitment =
             envelope.extract_subject::<MerkleHashOrchard>()?;
         let note_position =

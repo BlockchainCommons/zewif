@@ -138,7 +138,7 @@ impl TryFrom<Envelope> for UnifiedAddress {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("UnifiedAddress")?;
+        envelope.check_type("UnifiedAddress")?;
         let address = envelope.extract_subject()?;
         let diversifier_index = envelope.try_optional_object_for_predicate("diversifier_index")?;
         let hd_derivation_path = envelope.try_optional_object_for_predicate("hd_derivation_path")?;

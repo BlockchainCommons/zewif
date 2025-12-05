@@ -46,7 +46,7 @@ impl TryFrom<Envelope> for LegacySeed {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("LegacySeed")?;
+        envelope.check_type("LegacySeed")?;
         let seed_data = envelope.extract_subject()?;
         let fingerprint =
             envelope.try_optional_object_for_predicate("fingerprint")?;

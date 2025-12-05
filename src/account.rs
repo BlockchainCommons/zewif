@@ -252,7 +252,7 @@ impl TryFrom<Envelope> for Account {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("Account")?;
+        envelope.check_type("Account")?;
         let index = envelope.extract_subject()?;
         let name = envelope.extract_object_for_predicate("name")?;
         let birthday_height = envelope.extract_optional_object_for_predicate("birthday_height")?;

@@ -133,7 +133,7 @@ impl TryFrom<Envelope> for ZewifWallet {
     type Error = bc_envelope::Error;
 
     fn try_from(envelope: Envelope) -> bc_envelope::Result<Self> {
-        envelope.check_type_envelope("ZewifWallet")?;
+        envelope.check_type("ZewifWallet")?;
         let index = envelope.extract_subject()?;
         let network = envelope.extract_object_for_predicate("network")?;
         let seed_material = envelope.try_optional_object_for_predicate("seed_material")?;
