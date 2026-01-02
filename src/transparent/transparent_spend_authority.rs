@@ -73,8 +73,8 @@ impl TryFrom<Envelope> for TransparentSpendAuthority {
 #[cfg(test)]
 impl crate::RandomInstance for TransparentSpendAuthority {
     fn random() -> Self {
-        let mut rng = rand::thread_rng();
-        let a = rand::Rng::gen_range(&mut rng, 0..=1);
+        let mut rng = rand::rng();
+        let a = rand::Rng::random_range(&mut rng, 0..=1);
         if a == 0 {
             TransparentSpendAuthority::SpendingKey(TransparentSpendingKey::random())
         } else {
