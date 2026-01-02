@@ -5,10 +5,10 @@ edition = "2024"
 license = "MIT or Apache 2.0"
 
 [dependencies]
-dcbor = "^0.24.1"
-bc-components = "^0.30.0"
-bc-envelope = "^0.39.0"
-bc-crypto = "^0.13.0"
+dcbor = "^0.25.0"
+bc-components = "^0.31.0"
+bc-envelope = "^0.40.0"
+bc-crypto = "^0.14.0"
 
 thiserror = "^2.0"
 chrono = "0.4.39"

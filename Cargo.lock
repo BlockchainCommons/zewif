@@ -65,12 +65,12 @@ checksum = "0e050f626429857a27ddccb31e0aca21356bfa709c04041aefddac081a8f068a"
 
 [[package]]
 name = "bc-components"
-version = "0.30.0"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2dfb9c3384a1d1f46b45d12f21a7c0ae8fbff56fa43a4775226ca1288243dfc"
+checksum = "8964d6adfe959c028008ec26047b3fbc6d70c602d6d94ae2e75ade71c2f3c129"
 dependencies = [
- "bc-crypto 0.14.0",
- "bc-rand 0.5.0",
+ "bc-crypto",
+ "bc-rand",
  "bc-tags",
  "bc-ur",
  "dcbor",
@@ -89,35 +89,12 @@ dependencies = [
 
 [[package]]
 name = "bc-crypto"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9644245d48f4ab1bfa8c7eebfbd20d2bea7895e220de766f66876c5a71b14712"
-dependencies = [
- "argon2",
- "bc-rand 0.4.2",
- "chacha20poly1305",
- "crc32fast",
- "ed25519-dalek",
- "hex",
- "hkdf",
- "hmac",
- "pbkdf2",
- "rand 0.8.5",
- "scrypt",
- "secp256k1 0.30.0",
- "sha2",
- "thiserror",
- "x25519-dalek",
-]
-
-[[package]]
-name = "bc-crypto"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e74e8d1d886ad04ed17badc8856d7303168cabe9201bba100a621171aa41bd7"
 dependencies = [
  "argon2",
- "bc-rand 0.5.0",
+ "bc-rand",
  "chacha20poly1305",
  "crc32fast",
  "ed25519-dalek",
@@ -127,7 +104,7 @@ dependencies = [
  "pbkdf2",
  "rand 0.9.2",
  "scrypt",
- "secp256k1 0.31.1",
+ "secp256k1",
  "sha2",
  "thiserror",
  "x25519-dalek",
@@ -135,13 +112,13 @@ dependencies = [
 
 [[package]]
 name = "bc-envelope"
-version = "0.39.0"
+version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b0e35d76238bc607a7882c3ff4f04e6eb410f2d7cea093913df3bb9a6b6e1bc"
+checksum = "9bf61923f9126d7fbe6a006091c7224ff4a2d98470512f222c319a1189225044"
 dependencies = [
  "bc-components",
- "bc-crypto 0.14.0",
- "bc-rand 0.5.0",
+ "bc-crypto",
+ "bc-rand",
  "bc-ur",
  "bytes",
  "dcbor",
@@ -151,20 +128,6 @@ dependencies = [
  "paste",
  "ssh-key",
  "thiserror",
-]
-
-[[package]]
-name = "bc-rand"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdade83e92b8dfb9acbccd68e09f9e9555dbaf64c7bc2e5fbb894fcc9b53b413"
-dependencies = [
- "getrandom 0.2.16",
- "lazy_static",
- "num-traits",
- "rand 0.8.5",
- "rand_core 0.6.4",
- "rand_xoshiro 0.6.0",
 ]
 
 [[package]]
@@ -187,16 +150,16 @@ version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d283bf658d34e351bf65dd105a01d2a4e480750b58a218e768cd641a2d0eceb4"
 dependencies = [
- "bc-crypto 0.14.0",
- "bc-rand 0.5.0",
+ "bc-crypto",
+ "bc-rand",
  "thiserror",
 ]
 
 [[package]]
 name = "bc-tags"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed80b9938cf025bf0b07c826af7c1e5a7144d288ff7581d63fb0c9820c96d12f"
+checksum = "6a274cd8f4a11b1b6f6b31518cc8861d2f882ea8e19ad2e79507f91842803264"
 dependencies = [
  "dcbor",
  "paste",
@@ -204,9 +167,9 @@ dependencies = [
 
 [[package]]
 name = "bc-ur"
-version = "0.18.0"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "239f4cb333a4db3a2c29c1708b32a08bc9fb39494ecf1e2766cfe826dea4c98d"
+checksum = "140e21b3a7bf9ec71154f693d1186e96c8fd19e80c09beac477f9325b0d9eed5"
 dependencies = [
  "dcbor",
  "thiserror",
@@ -443,9 +406,9 @@ dependencies = [
 
 [[package]]
 name = "dcbor"
-version = "0.24.1"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee26475da05597b4e6dcd3b9a1c79f852014235629f8aabd8d818f494730d3e0"
+checksum = "4cbb367e82614ca911642918e6a1a0095e443dd64aa955328e91744f33c5c6bf"
 dependencies = [
  "chrono",
  "half",
@@ -866,9 +829,9 @@ dependencies = [
 
 [[package]]
 name = "known-values"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcba7ba76d2c1966696c12be20222f67dc0478acef55de3f47e17deb613454c8"
+checksum = "52635dc6d2386da2120034aaef6b16956aa22b0f407106d2e44ae397c04bab51"
 dependencies = [
  "bc-components",
  "dcbor",
@@ -1251,7 +1214,6 @@ version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
 dependencies = [
- "libc",
  "rand_chacha 0.3.1",
  "rand_core 0.6.4",
 ]
@@ -1404,33 +1366,13 @@ dependencies = [
 
 [[package]]
 name = "secp256k1"
-version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b50c5943d326858130af85e049f2661ba3c78b26589b8ab98e65e80ae44a1252"
-dependencies = [
- "bitcoin_hashes 0.14.1",
- "rand 0.8.5",
- "secp256k1-sys 0.10.1",
-]
-
-[[package]]
-name = "secp256k1"
 version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c3c81b43dc2d8877c216a3fccf76677ee1ebccd429566d3e67447290d0c42b2"
 dependencies = [
  "bitcoin_hashes 0.14.1",
  "rand 0.9.2",
- "secp256k1-sys 0.11.0",
-]
-
-[[package]]
-name = "secp256k1-sys"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4387882333d3aa8cb20530a17c69a3752e97837832f34f6dccc760e715001d9"
-dependencies = [
- "cc",
+ "secp256k1-sys",
 ]
 
 [[package]]
@@ -1595,7 +1537,7 @@ version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ef3a90a4a282e53765d6ba384c6f7e1ed7c9efef8373d7a71310a0649e6c795"
 dependencies = [
- "bc-rand 0.5.0",
+ "bc-rand",
  "bc-shamir",
  "thiserror",
 ]
@@ -2023,9 +1965,9 @@ name = "zewif"
 version = "0.1.0"
 dependencies = [
  "bc-components",
- "bc-crypto 0.13.0",
+ "bc-crypto",
  "bc-envelope",
- "bc-rand 0.5.0",
+ "bc-rand",
  "chrono",
  "dcbor",
  "hex",
