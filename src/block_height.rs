@@ -235,7 +235,7 @@ mod tests {
     impl crate::RandomInstance for BlockHeight {
         fn random() -> Self {
             let mut rng = bc_rand::thread_rng();
-            let value = rand::Rng::gen_range(&mut rng, 0..u32::MAX);
+            let value = rand::Rng::random_range(&mut rng, 0..u32::MAX);
             Self(value)
         }
     }
